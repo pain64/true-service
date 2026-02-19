@@ -7,6 +7,9 @@ import java.lang.annotation.Target;
 import java.util.UUID;
 
 public class Dsl {
+    // TODO: all well-known headers
+    // TODO: spec byStatusCode by 4
+    // TODO: spec SetCookie by 8
     // request
     //   - method
     //   - uri
