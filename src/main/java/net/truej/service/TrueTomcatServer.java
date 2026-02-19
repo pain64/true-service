@@ -15,6 +15,8 @@ import java.lang.management.ManagementFactory;
 public class TrueTomcatServer {
     public static void serve(int port, HttpServletServer config) {
 
+        IO.println("hello, from new IO class!");
+
         System.out.println("time: " + ManagementFactory.getRuntimeMXBean().getUptime() + "ms");
 
         var tomcat = new Tomcat();

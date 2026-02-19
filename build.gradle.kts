@@ -7,6 +7,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
   mavenCentral()
+  mavenLocal()
 }
 
 java {
@@ -16,6 +17,7 @@ java {
 
 tasks.withType<JavaCompile> {
   options.compilerArgs.add("-parameters")
+  //options.compilerArgs.add("--add-opens java.base/java.lang=ALL-UNNAMED")
 }
 
 dependencies {
@@ -29,6 +31,18 @@ dependencies {
 
   implementation("org.jetbrains:annotations:26.0.2-1")
   implementation("org.jspecify:jspecify:1.0.0")
+
+  implementation("io.undertow:undertow-core:2.3.20.Final")
+  implementation("io.netty:netty-all:4.2.9.Final")
+  implementation("io.netty:netty-codec-http:4.2.9.Final")
+  implementation("io.netty:netty-transport-native-io_uring:4.2.9.Final")
+  implementation("io.netty:netty-transport-native-unix-common:4.2.9.Final")
+  implementation("org.jctools:jctools-core:4.0.5")
+
+
+  implementation("org.postgresql:postgresql:42.7.9-SNAPSHOT")
+  implementation("com.zaxxer:HikariCP:5.1.0")
+
 }
 
 tasks.test {

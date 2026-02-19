@@ -2,16 +2,22 @@ package org.example.shortener;
 
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.io.schubfach.FloatToDecimal;
 // import org.jetbrains.annotations.Nullable;
 
 import javax.sql.DataSource;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+
 @RequiredArgsConstructor
 public class UrlShortenerApi {
+
+    @interface Get {}
+    record PathParameter() {}
 
     public int add(int a, int b) {
         return a + b;
@@ -32,13 +38,31 @@ public class UrlShortenerApi {
 
     // GET /UrlShortenerApi.decode/123
     // PathVariableParametersReader
-     String decode(String encodedId) {
+     @Get String decode(PathParameter encodedId) {
         return "https://example.com";
 //            return ds.q(
 //                "select url from links where id = ?",
 //                Long.decode("0x" + encodedId)
 //            ).fetchOne(String.class);
     }
+
+    // ByStatusCode1<Sc401, Void, T>
+    // ByContentType
+    // ByHeader
+    // @HeaderLiteral("Accept: application/*") record AcceptApplicationAnyHeader() {}
+    // @StatusCodeLiteral(555) record Sc555() {}
+    // sealed interface RedirectType { }
+    // record Temporal(Sc302 code) implements RedirectType {
+    //     public static Temporal of = new Temporal(Sc302.of);
+    // }
+    // record Permanent(Sc301 code) implements RedirectType {
+    //     public static Permanent of = new Permanent(Sc301.of);
+    // }
+    // record Redirect<T extends RedirectType>(String location, T type) {
+    // }
+    // @Get("/l") Redirect<Temporal> decode(PathParameter encodedId) {
+    //     return new Redirect("https://example.com", Temporal.of);
+    // }
 
     public record AB<X, Y>(X x, Y y) {}
 
@@ -72,6 +96,7 @@ public class UrlShortenerApi {
         List<@Nullable String> list,
         @Nullable String delimiter
     ) {
+
         // join(',', filter(list, s -> s != null))
         // join ',' (filter list \s s != null)
         // join(',', filter(list, isNotNil))

@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
@@ -20,7 +21,7 @@ public class Test3 {
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, property = "kind")
     sealed interface I {}
-    record Impl1(Integer x) implements I {}
+    record Impl1(@Nullable Integer x) implements I {}
     record Impl2(int y) implements I {}
 
     record A<T extends Comparable<T>>(T v) { }

@@ -5,7 +5,7 @@ import net.truej.service.xxx.ParameterMetadata;
 
 import java.util.List;
 
-public class PathVariableParametersReader implements ParametersReader<HttpServletExchange> {
+public class PathVariableReader implements ParametersReader<HttpServletExchange> {
 
     Object decodeArgument(String value, Class<?> toClass) {
         if (toClass == String.class)
