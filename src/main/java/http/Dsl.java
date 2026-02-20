@@ -136,6 +136,7 @@ public class Dsl {
     interface StatusCode { }
     public static class ScOk implements StatusCode { }
     public static class ScBadRequest implements StatusCode { }
+    public static class ScInternalServerError implements StatusCode {}
 
     public sealed interface ByStatusCode2<
         R1 extends HttpResponse<?, ?, ?>,
@@ -328,4 +329,41 @@ public class Dsl {
 
         return null;
     }
+
+    public interface NextExtra1<T> {
+        void next(T extraParameter1);
+    }
+
+    public record Authorization() {}
+
+    public ByStatusCode2<
+        HttpResponse<?, ?, ?>,
+        HttpResponse<ScInternalServerError, H0, TextPlain>
+        >
+    handle(NextExtra1<Authorization> next) {
+        // имеет ли middleware требования к тому что вернет decoratee?
+        //
+        try {
+            next.next(new Authorization());
+        } catch (Exception e) {
+            return ByStatusCode2.of2(
+                // Sc500 Sc200 Sc307
+                new HttpResponse<>(new ScInternalServerError(), new H0(), new TextPlain("too small"))
+            );
+        }
+        return null;
+    }
+
+    // Middleware design
+    // class ExceptionHandlingMiddleware {
+    //     ByStatusCode2<
+    //         >
+    //     handle(Runnable invocation) {
+    //         try {
+    //             return of1(invocation.run());
+    //         } catch(Exception e) {
+    //             return
+    //         }
+    //     }
+    // }
 }
