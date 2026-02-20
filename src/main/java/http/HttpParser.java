@@ -16,7 +16,7 @@ public class HttpParser {
 
     String token(ByteStream s) {
         // while(current() in allowed)
-        return null;url = git@github.com:pain64/true-service.git
+        return null;
     }
 
     // returns byte length of parsed token
