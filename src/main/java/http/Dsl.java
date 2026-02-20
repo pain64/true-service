@@ -2,8 +2,10 @@ package http;
 
 import net.truej.service.union.Union2;
 
+import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class Dsl {
@@ -38,12 +40,66 @@ public class Dsl {
     interface HttpRequestHeader { } // ???
     interface HttpResponseHeader { } // ???
 
-    public static class Location implements HttpHeader { }
+    //https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers
+
+    //Authorization
+    public static class Authorization implements HttpHeader { }
+    public static class ProxyAuthorization implements HttpHeader { }
+
+    //Connection
+    public static class Connection implements HttpHeader { }
+    public static class KeepAlive implements HttpHeader { }
+
+
+    public static class Accept implements HttpHeader { }
+    public static class AcceptEncoding implements HttpHeader { }
+    public static class AcceptCharset implements HttpHeader { }
+    public static class AcceptLanguage implements HttpHeader { }
+    public static class AcceptRange implements HttpHeader { }
+
+    public static class MaxForwards implements HttpHeader { }
+
+    //CORS
+
+    //Downloads
+    public static class ContentDisposition implements HttpHeader { }
+
+    //Message body information
+    public static class ContentLength implements HttpHeader { }
+    public static class ContentType implements HttpHeader { }
+    public static class ContentEncoding implements HttpHeader { }
     public static class ContentLanguage implements HttpHeader { }
+    public static class ContentLocation implements HttpHeader { }
+
+    //Redirects
+    public static class Location implements HttpHeader { }
+    public static class Refresh implements HttpHeader { }
+
+    //Request context
+    public static class From implements HttpHeader { }
+    public static class Host implements HttpHeader { }
+    public static class Referer implements HttpHeader { }
+    public static class ReferrerPolicy implements HttpHeader { }
+    public static class UserAgent implements HttpHeader { }
+
+    //Cache-control
+    public static class CacheControl implements HttpHeader { }
+
+
+    //Date
+    public static class Date implements HttpHeader { }
+
+    public static class Server implements HttpHeader { }
+
     public interface CookieHeader extends HttpHeader { } // kv
     public static class SetCookie1<T> implements HttpHeader { }
     public static class SetCookie2<T1, T2> implements HttpHeader { }
     public static class SetCookie3<T1, T2, T3> implements HttpHeader { }
+    public static class SetCookie4<T1, T2, T3, T4> implements HttpHeader { }
+    public static class SetCookie5<T1, T2, T3, T4, T5> implements HttpHeader { }
+    public static class SetCookie6<T1, T2, T3, T4, T5, T6> implements HttpHeader { }
+    public static class SetCookie7<T1, T2, T3, T4, T5, T6, T7> implements HttpHeader { }
+    public static class SetCookie8<T1, T2, T3, T4, T5, T6, T7, T8> implements HttpHeader { }
 
     sealed interface Headers { }
 
@@ -107,6 +163,121 @@ public class Dsl {
             R2 extends HttpResponse<?, ?, ?>> ByStatusCode2<R1, R2> of2(R2 value) {
             return new ByStatusCode2.V2<>(value);
 
+        }
+    }
+
+    public sealed interface ByStatusCode3<
+        R1 extends HttpResponse<?, ?, ?>,
+        R2 extends HttpResponse<?, ?, ?>,
+        R3 extends HttpResponse<?, ?, ?>
+        > {
+
+        record V1<
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>
+            >(R1 value) implements ByStatusCode3<R1, R2, R3> { }
+
+        record V2<
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>
+            >(R2 value) implements ByStatusCode3<R1, R2, R3> { }
+
+        record V3<
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>
+            >(R3 value) implements ByStatusCode3<R1, R2, R3> { }
+
+        static <
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>> ByStatusCode3<R1, R2, R3> of1(R1 value) {
+            return new ByStatusCode3.V1<>(value);
+        }
+
+        static <
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>> ByStatusCode3<R1, R2, R3> of2(R2 value) {
+            return new ByStatusCode3.V2<>(value);
+        }
+
+        static <
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>> ByStatusCode3<R1, R2, R3> of3(R3 value) {
+            return new ByStatusCode3.V3<>(value);
+        }
+    }
+
+
+    public sealed interface ByStatusCode4<
+        R1 extends HttpResponse<?, ?, ?>,
+        R2 extends HttpResponse<?, ?, ?>,
+        R3 extends HttpResponse<?, ?, ?>,
+        R4 extends HttpResponse<?, ?, ?>
+        > {
+
+        record V1<
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>
+            >(R1 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+
+        record V2<
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>
+            >(R2 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+
+        record V3<
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>
+            >(R3 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+
+        record V4<
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>
+            >(R4 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+
+        static <
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of1(R1 value) {
+            return new ByStatusCode4.V1<>(value);
+        }
+
+        static <
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of2(R2 value) {
+            return new ByStatusCode4.V2<>(value);
+        }
+
+        static <
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of3(R3 value) {
+            return new ByStatusCode4.V3<>(value);
+        }
+
+        static <
+            R1 extends HttpResponse<?, ?, ?>,
+            R2 extends HttpResponse<?, ?, ?>,
+            R3 extends HttpResponse<?, ?, ?>,
+            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of4(R4 value) {
+            return new ByStatusCode4.V4<>(value);
         }
     }
 

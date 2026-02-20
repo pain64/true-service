@@ -40,7 +40,7 @@ dependencies {
   implementation("org.jctools:jctools-core:4.0.5")
 
 
-  implementation("org.postgresql:postgresql:42.7.9-SNAPSHOT")
+  implementation("org.postgresql:postgresql:42.7.9")
   implementation("com.zaxxer:HikariCP:5.1.0")
 
 }
