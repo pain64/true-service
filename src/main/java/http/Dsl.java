@@ -1,14 +1,16 @@
 package http;
 
-import net.truej.service.union.Union2;
+import lombok.Data;
 
-import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+import static http.Dsl.BeforeResult.*;
+import static http.Dsl.BeforeResult.ofFailure;
+
 public class Dsl {
+
     // TODO: all well-known headers
     // TODO: spec byStatusCode by 4
     // TODO: spec SetCookie by 8
@@ -37,8 +39,6 @@ public class Dsl {
 
 
     interface HttpHeader { }
-    interface HttpRequestHeader { } // ???
-    interface HttpResponseHeader { } // ???
 
     //https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers
 
@@ -101,7 +101,7 @@ public class Dsl {
     public static class SetCookie7<T1, T2, T3, T4, T5, T6, T7> implements HttpHeader { }
     public static class SetCookie8<T1, T2, T3, T4, T5, T6, T7, T8> implements HttpHeader { }
 
-    sealed interface Headers { }
+    public sealed interface Headers { }
 
 
     public static final class H0 implements Headers { }
@@ -110,6 +110,9 @@ public class Dsl {
     @Target(ElementType.TYPE_USE) public @interface Name {
         String value();
     }
+
+    // SetCookie<JSessionId, CNil>
+    // Cookie<JSessionId, CNil>
 
     public interface CookiePart<T> { }
 
@@ -127,47 +130,59 @@ public class Dsl {
         T3 extends HttpHeader
         > implements Headers { }
 
-    interface MimeMessage { }
-    public static class ApplicationJson<T> implements MimeMessage { }
+    public interface MimeMessage { }
+    @Data public static class ApplicationJson<T> implements MimeMessage {
+        public final T v;
+    }
     public static class TextPlain implements MimeMessage {
         public TextPlain(String text) { }
     }
 
-    interface StatusCode { }
-    public static class ScOk implements StatusCode { }
-    public static class ScBadRequest implements StatusCode { }
-    public static class ScInternalServerError implements StatusCode {}
+    public interface StatusCode { }
+    public static class Sc200 implements StatusCode {
+        public static Sc200 v = new Sc200();
+    }
+    public static class Sc400 implements StatusCode {
+        public static Sc400 v = new Sc400();
+    }
+    public static class Sc500 implements StatusCode {
+        public static Sc500 v = new Sc500();
+    }
+    public static class Sc401 implements StatusCode {
+        public static Sc401 v = new Sc401();
+    }
 
-    public sealed interface ByStatusCode2<
+
+    public sealed interface Variants2<
         R1 extends HttpResponse<?, ?, ?>,
         R2 extends HttpResponse<?, ?, ?>
-        > {
+        > extends EndpointResult {
 
         record V1<
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>
-            >(R1 value) implements ByStatusCode2<R1, R2> { }
+            >(R1 value) implements Variants2<R1, R2> { }
 
         record V2<
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>
-            >(R2 value) implements ByStatusCode2<R1, R2> { }
+            >(R2 value) implements Variants2<R1, R2> { }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
-            R2 extends HttpResponse<?, ?, ?>> ByStatusCode2<R1, R2> of1(R1 value) {
-            return new ByStatusCode2.V1<>(value);
+            R2 extends HttpResponse<?, ?, ?>> Variants2<R1, R2> of1(R1 value) {
+            return new Variants2.V1<>(value);
         }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
-            R2 extends HttpResponse<?, ?, ?>> ByStatusCode2<R1, R2> of2(R2 value) {
-            return new ByStatusCode2.V2<>(value);
+            R2 extends HttpResponse<?, ?, ?>> Variants2<R1, R2> of2(R2 value) {
+            return new Variants2.V2<>(value);
 
         }
     }
 
-    public sealed interface ByStatusCode3<
+    public sealed interface Variants3<
         R1 extends HttpResponse<?, ?, ?>,
         R2 extends HttpResponse<?, ?, ?>,
         R3 extends HttpResponse<?, ?, ?>
@@ -177,44 +192,44 @@ public class Dsl {
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>
-            >(R1 value) implements ByStatusCode3<R1, R2, R3> { }
+            >(R1 value) implements Variants3<R1, R2, R3> { }
 
         record V2<
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>
-            >(R2 value) implements ByStatusCode3<R1, R2, R3> { }
+            >(R2 value) implements Variants3<R1, R2, R3> { }
 
         record V3<
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>
-            >(R3 value) implements ByStatusCode3<R1, R2, R3> { }
+            >(R3 value) implements Variants3<R1, R2, R3> { }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
-            R3 extends HttpResponse<?, ?, ?>> ByStatusCode3<R1, R2, R3> of1(R1 value) {
-            return new ByStatusCode3.V1<>(value);
+            R3 extends HttpResponse<?, ?, ?>> Variants3<R1, R2, R3> of1(R1 value) {
+            return new Variants3.V1<>(value);
         }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
-            R3 extends HttpResponse<?, ?, ?>> ByStatusCode3<R1, R2, R3> of2(R2 value) {
-            return new ByStatusCode3.V2<>(value);
+            R3 extends HttpResponse<?, ?, ?>> Variants3<R1, R2, R3> of2(R2 value) {
+            return new Variants3.V2<>(value);
         }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
-            R3 extends HttpResponse<?, ?, ?>> ByStatusCode3<R1, R2, R3> of3(R3 value) {
-            return new ByStatusCode3.V3<>(value);
+            R3 extends HttpResponse<?, ?, ?>> Variants3<R1, R2, R3> of3(R3 value) {
+            return new Variants3.V3<>(value);
         }
     }
 
 
-    public sealed interface ByStatusCode4<
+    public sealed interface Variants4<
         R1 extends HttpResponse<?, ?, ?>,
         R2 extends HttpResponse<?, ?, ?>,
         R3 extends HttpResponse<?, ?, ?>,
@@ -226,72 +241,87 @@ public class Dsl {
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
             R4 extends HttpResponse<?, ?, ?>
-            >(R1 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+            >(R1 value) implements Variants4<R1, R2, R3, R4> { }
 
         record V2<
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
             R4 extends HttpResponse<?, ?, ?>
-            >(R2 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+            >(R2 value) implements Variants4<R1, R2, R3, R4> { }
 
         record V3<
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
             R4 extends HttpResponse<?, ?, ?>
-            >(R3 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+            >(R3 value) implements Variants4<R1, R2, R3, R4> { }
 
         record V4<
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
             R4 extends HttpResponse<?, ?, ?>
-            >(R4 value) implements ByStatusCode4<R1, R2, R3, R4> { }
+            >(R4 value) implements Variants4<R1, R2, R3, R4> { }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
-            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of1(R1 value) {
-            return new ByStatusCode4.V1<>(value);
+            R4 extends HttpResponse<?, ?, ?>> Variants4<R1, R2, R3, R4> of1(R1 value) {
+            return new Variants4.V1<>(value);
         }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
-            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of2(R2 value) {
-            return new ByStatusCode4.V2<>(value);
+            R4 extends HttpResponse<?, ?, ?>> Variants4<R1, R2, R3, R4> of2(R2 value) {
+            return new Variants4.V2<>(value);
         }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
-            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of3(R3 value) {
-            return new ByStatusCode4.V3<>(value);
+            R4 extends HttpResponse<?, ?, ?>> Variants4<R1, R2, R3, R4> of3(R3 value) {
+            return new Variants4.V3<>(value);
         }
 
         static <
             R1 extends HttpResponse<?, ?, ?>,
             R2 extends HttpResponse<?, ?, ?>,
             R3 extends HttpResponse<?, ?, ?>,
-            R4 extends HttpResponse<?, ?, ?>> ByStatusCode4<R1, R2, R3, R4> of4(R4 value) {
-            return new ByStatusCode4.V4<>(value);
+            R4 extends HttpResponse<?, ?, ?>> Variants4<R1, R2, R3, R4> of4(R4 value) {
+            return new Variants4.V4<>(value);
         }
     }
 
+    public sealed interface EndpointResult { }
 
-    public static class HttpResponse<
-        S extends StatusCode,
-        H extends Headers,
-        B extends MimeMessage
-        > {
-
-        public HttpResponse(S s, H h, B B) {
-
+    public sealed interface HeaderList { }
+    public static final class H<X extends HttpHeader, N extends HeaderList> implements HeaderList {
+        public final X v;
+        public final N next;
+        public H(X httpHeader, N next) {
+            this.v = httpHeader;
+            this.next = next;
         }
+    }
+    public static final class HNil implements HeaderList {
+        public static HNil v = new HNil();
+    }
+
+
+    @Data public final static class HttpResponse<
+        S extends StatusCode,
+        H extends HeaderList,
+        M extends MimeMessage
+        > implements EndpointResult {
+
+        public final S statusCode;
+        public final H headers;
+        public final M body;
     }
 
     //public static class HttpRequest { }
@@ -306,11 +336,12 @@ public class Dsl {
 
     public record Vec2f(float x, float y) { }
 
-    public ByStatusCode2<
-        HttpResponse<
-            ScOk, H2<Location, SetCookie2<MyCookiePart1, MyCookiePart2>>,
-            ApplicationJson<Vec2f>>,
-        HttpResponse<ScBadRequest, H0, TextPlain>>
+
+    public Variants2<
+                HttpResponse<
+                    Sc200, H<Location, H<SetCookie2<MyCookiePart1, MyCookiePart2>, HNil>>,
+                    ApplicationJson<Vec2f>>,
+                HttpResponse<Sc400, HNil, TextPlain>>
 
     doSomething(
         // Dsl.doSomething/{departmentId}/{userId}/?userName=...&age=...
@@ -323,38 +354,135 @@ public class Dsl {
         ApplicationJson<Vec2f> vector
     ) {
         if (age.v < 18)
-            return ByStatusCode2.of2(
-                new HttpResponse<>(new ScBadRequest(), new H0(), new TextPlain("too small"))
+            return Variants2.of2(
+                new HttpResponse<>(new Sc400(), HNil.v, new TextPlain("too small"))
             );
 
         return null;
     }
 
-    public interface NextExtra1<T> {
-        void next(T extraParameter1);
+    public sealed interface BeforeResult<ExtraNext, BeforeFailure extends EndpointResult> {
+        record Success<
+            ExtraNext, BeforeFailure extends EndpointResult
+            >(ExtraNext value) implements BeforeResult<ExtraNext, BeforeFailure> { }
+
+        record Failure<
+            ExtraNext, BeforeFailure extends EndpointResult
+            >(BeforeFailure value) implements BeforeResult<ExtraNext, BeforeFailure> { }
+
+        static <ExtraNext, BeforeFailure extends EndpointResult> BeforeResult<
+            ExtraNext, BeforeFailure> ofSuccess(ExtraNext value) {
+            return new Success<>(value);
+        }
+
+        static <ExtraNext, BeforeFailure extends EndpointResult> BeforeResult<
+            ExtraNext, BeforeFailure> ofFailure(BeforeFailure value) {
+            return new Failure<>(value);
+        }
     }
 
-    public record Authorization() {}
+    interface Middleware { }
 
-    public ByStatusCode2<
-        HttpResponse<?, ?, ?>,
-        HttpResponse<ScInternalServerError, H0, TextPlain>
-        >
-    handle(NextExtra1<Authorization> next) {
-        // имеет ли middleware требования к тому что вернет decoratee?
-        //
-        try {
-            next.next(new Authorization());
-        } catch (Exception e) {
-            return ByStatusCode2.of2(
-                // Sc500 Sc200 Sc307
-                new HttpResponse<>(new ScInternalServerError(), new H0(), new TextPlain("too small"))
+    public static class AuthenticationMiddleware implements Middleware {
+
+        public record User(long id, String name) { }
+
+        public BeforeResult<User,
+            HttpResponse<Sc401, HNil, TextPlain>> before(Authorization authorization) {
+
+            if (false) return ofFailure(
+                new HttpResponse<>(Sc401.v, HNil.v, new TextPlain("Пользователь не найден"))
+            );
+
+            return ofSuccess(new User(42L, "Joe"));
+        }
+
+        public <S extends StatusCode, X extends HeaderList,
+            M extends MimeMessage> HttpResponse<S, X, M> onAfter1(
+            HttpResponse<S, X, M> nextResult
+        ) {
+            return nextResult; // pass through without conversion
+        }
+    }
+
+    // Variadic templates ???
+    // H<Authorization, H<ContentType, HEnd>>
+    //
+
+    public static class ToJsonRpcMiddleware implements Middleware {
+
+        public sealed interface RpcResult<T> { }
+        public record Ok<T>(T result) implements RpcResult<T> { }
+        public record Fail<T>(String message) implements RpcResult<T> { }
+
+        public BeforeResult<Void, ?> before() {
+            return ofSuccess(null); // no extra parameters
+        }
+
+        // route by:
+        //     1. StatusCode
+        //     2. MimeType
+        public <X extends HeaderList, T> HttpResponse<Sc200, X,
+            ApplicationJson<RpcResult<T>>> onAfter1(
+            HttpResponse<Sc200, X, ApplicationJson<T>> nextResult
+        ) {
+            return new HttpResponse<>(
+                Sc200.v, nextResult.headers,
+                new ApplicationJson<>(new Ok<>(nextResult.body.v))
             );
         }
-        return null;
+
+        // route by: Exception class
+        public HttpResponse<Sc200, HNil, ApplicationJson<Fail<Void>>> onException1(
+            Exception nextException
+        ) {
+            return new HttpResponse<>(
+                Sc200.v, HNil.v, new ApplicationJson<>(
+                new Fail<>(nextException.getMessage())
+            ));
+        }
     }
 
-    // Middleware design
+
+    public static class DropHeaderMiddleware implements Middleware {
+
+        public <S extends StatusCode, X extends HeaderList, C extends MimeMessage
+            > HttpResponse<S, X, C> onAfter1(
+            HttpResponse<S, H<Authorization, X>, C> nextResult
+        ) {
+            return new HttpResponse<>(
+                nextResult.statusCode, nextResult.headers.next, nextResult.body
+            );
+        }
+    }
+
+    public static class AddHeaderMiddleware implements Middleware {
+
+        public <S extends StatusCode, X extends HeaderList, C extends MimeMessage
+            > HttpResponse<S, H<Server, X>, C> onAfter1(
+            HttpResponse<S, X, C> nextResult
+        ) {
+            return new HttpResponse<>(
+                nextResult.statusCode, new H<>(new Server(), nextResult.headers), nextResult.body
+            );
+        }
+    }
+
+    // Middleware features:
+    //     1. добавление extra параметров в контекст
+    //     2. добавление extra логики до и после вызова upstream
+    //     3. в зависимости от __того что вернул upstream__ как-то переобработать ответ
+    //     4. обработать исключение со стороны upstream
+    // function middleware(PathVariable extra, upstream) {
+    //     if(!assertSome(extra)) return ???
+    //
+    // }
+    // Разделим middleware на before и after
+    //     before:
+    //         сделать extra работу до вызова upstream. Если handlable ошибка - какой-то другой статус код???
+    //     after:
+    //         1. сделать extra работу после вызова upstream
+    //         2. Каждый известный тип ответа upstream замапить во что-то другое?
     // class ExceptionHandlingMiddleware {
     //     ByStatusCode2<
     //         >
