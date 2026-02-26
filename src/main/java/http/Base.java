@@ -13,6 +13,7 @@ public class Base {
             bytes[remains++] = b;
         }
         public int remains() { return remains; }
+        public byte getLast(int i) { return bytes[remains()-i]; }
         public void reset() { remains = 0; }
 
         public String toStringAndReset() {
@@ -40,8 +41,9 @@ public class Base {
         record Token(String value) implements Method { }
     }
 
-    public static void BYTE(ByteStream bs, char ch) {
-        if (bs.advance() != ch) throw new RuntimeException("expected " + ch);
+    public static byte BYTE(ByteStream bs, char ch) {
+        if (bs.advance() == ch) return (byte) ch;
+        throw new RuntimeException("expected " + ch);
     }
 
     public static byte BYTE_OPT(ByteStream bs, char ch) {
@@ -68,6 +70,21 @@ public class Base {
         var b = bs.advance();
         if ((b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z')) return b;
         else { bs.unadvance(b); return -1; }
+    }
+
+    public static byte ALPHA(ByteStream bs) {
+        var b = bs.advance();
+        if ((b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z'))
+            return b;
+        throw new RuntimeException("Expected ALPHA");
+    }
+
+    public static byte SCHEME_CHAR_OPT(ByteStream bs) {
+        var b = bs.advance();
+        if ((b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z')
+            || (b >= '0' && b <= '9') || b == '+' || b == '-' || b == '.')
+            return b;
+        else {bs.unadvance(b); return -1;}
     }
 
     public static void ALPHA_TOKEN(ByteStream bs, Buffer bfr) {
@@ -321,6 +338,17 @@ public class Base {
             TOKEN_OR_QUOTED_STRING(bs, bfr);
         }
         return nameEnd;
+    }
+
+    public static byte HEXDIG_OPT(ByteStream bs) {
+        var b = bs.advance();
+        if ((b >= '0' && b <= '9') || (b >= 'A' && b <= 'F')) return b;
+        else { bs.unadvance(b); return -1; }
+    }
+
+    public static byte HEXDIG(ByteStream bs) {
+        byte b; if ((b = HEXDIG_OPT(bs)) != -1) return b;
+        throw new RuntimeException("Expected HEXDIG");
     }
 
 }

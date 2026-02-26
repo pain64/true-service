@@ -2,6 +2,8 @@ package http;
 
 import java.util.ArrayList;
 
+import static http.Base.BYTE;
+
 public class HttpParser {
     //
     // GET /Controller1.someMethod1 HTTP/1.1
