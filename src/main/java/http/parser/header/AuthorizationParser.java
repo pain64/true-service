@@ -54,11 +54,11 @@ public class AuthorizationParser {
         SKIP_OWS(bs);
 
         if (TOKEN68(bs, bfr) == 0 && (b = CHAR_OPT(bs, '\r')) != -1) {
-            bs.unadvance(b);
+            bs.unadvance((byte) '\r');
             return new Authorization(authSchema, bfr.toStringAndReset(), null);
         }
 
-        for (var i = bfr.remains()-1; i >= 0; i--) bs.unadvance(bfr.bytes[i]);
+        for (var i = bfr.remains() - 1; i >= 0; i--) bs.unadvance(bfr.bytes[i]);
         bfr.reset();
 
         var authParam = AUTH_PARAM(bs, bfr);

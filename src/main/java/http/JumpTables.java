@@ -5,25 +5,10 @@ import http.Base.ByteStream;
 public class JumpTables {
     public static final int TABLE_SIZE = 128;
 
-    //ASCII
-    public static final byte[] ASCII_TABLE = new byte[TABLE_SIZE];
-    {
-        for (var i = 0; i < TABLE_SIZE; i++) {
-            ASCII_TABLE[i] = (byte) i;
-        }
-    }
 
-    //DIGIT
-    public static final byte[] DIGIT_TABLE = new byte[TABLE_SIZE];
-    {
-        for (var i = 0; i < TABLE_SIZE; i++) {
-            if ((byte) i >= '0' && (byte) i <= '9') DIGIT_TABLE[i] = (byte) i;
-            else DIGIT_TABLE[i] = -1;
-        }
-    }
-
+    // Убрать IS_DIGIT_TABLE
     public static final boolean[] IS_DIGIT_TABLE = new boolean[TABLE_SIZE];
-    { for (var i = 0; i < TABLE_SIZE; i++) IS_DIGIT_TABLE[i] = DIGIT_TABLE[i] != -1; }
+    { for (var i = 0; i < TABLE_SIZE; i++) IS_DIGIT_TABLE[i] = (byte) i >= '0' && (byte) i <= '9'; }
 
     public static byte DIGIT(ByteStream bs) {
         var b = bs.advance(); if (IS_DIGIT_TABLE[b]) return b;
@@ -36,17 +21,8 @@ public class JumpTables {
         else {bs.unadvance(b); return -1;}
     }
 
-    //ALPHA
-    public static final byte[] ALPHA_TABLE = new byte[TABLE_SIZE];
-    {
-        for (var i = 0; i < TABLE_SIZE; i++) {
-            if ((((byte) i >= 'a' && (byte) i <= 'z') || (byte) i >= 'A' && (byte) i <= 'Z')) ALPHA_TABLE[i] = (byte) i;
-            else ALPHA_TABLE[i] = -1;
-        }
-    }
-
     public static final boolean[] IS_ALPHA_TABLE = new boolean[TABLE_SIZE];
-    { for (var i = 0; i < TABLE_SIZE; i++) IS_ALPHA_TABLE[i] = ALPHA_TABLE[i] != -1; }
+    { for (var i = 0; i < TABLE_SIZE; i++) IS_ALPHA_TABLE[i] = (((byte) i >= 'a' && (byte) i <= 'z') || (byte) i >= 'A' && (byte) i <= 'Z'); }
 
     public static byte ALPHA(ByteStream bs) {
         var b = bs.advance(); if (IS_ALPHA_TABLE[b]) return b;
@@ -61,17 +37,17 @@ public class JumpTables {
 
     // ALPHA/DIGIT
 
-    public static final boolean[] IS_ALPHA_DIGIT_TABLE = new boolean[TABLE_SIZE];
-    { for (var i = 0; i < TABLE_SIZE; i++) IS_ALPHA_DIGIT_TABLE[i] = (IS_ALPHA_TABLE[i] || IS_DIGIT_TABLE[i]); }
+    public static final boolean[] IS_ALPHA_OR_DIGIT_TABLE = new boolean[TABLE_SIZE];
+    { for (var i = 0; i < TABLE_SIZE; i++) IS_ALPHA_OR_DIGIT_TABLE[i] = (IS_ALPHA_TABLE[i] || IS_DIGIT_TABLE[i]); }
 
     public static byte ALPHA_DIGIT(ByteStream bs) {
-        var b = bs.advance(); if (IS_ALPHA_DIGIT_TABLE[b]) return b;
+        var b = bs.advance(); if (IS_ALPHA_OR_DIGIT_TABLE[b]) return b;
         throw new RuntimeException("Expected ALPHA/DIGIT");
     }
 
     public static byte ALPHA_DIGIT_OPT(ByteStream bs) {
         var b = bs.advance();
-        if (IS_ALPHA_DIGIT_TABLE[b]) return b;
+        if (IS_ALPHA_OR_DIGIT_TABLE[b]) return b;
         else {bs.unadvance(b); return -1;}
     }
 
@@ -98,6 +74,7 @@ public class JumpTables {
     //VCHAR
     public static final byte[] VCHAR_TABLE = new byte[TABLE_SIZE];
     {
+        // new byte[] {"*", "a", "b"}
         for (var i = 0; i < TABLE_SIZE; i++) {
             if ((((byte) i >= '!' && (byte) i <= '~'))) ALPHA_TABLE[i] = (byte) i;
             else ALPHA_TABLE[i] = -1;
@@ -118,7 +95,7 @@ public class JumpTables {
         else {bs.unadvance(b); return -1;}
     }
 
-    //DELIMITER
+    //DELIMITER - удалить?
     public static final byte[] DELIMITER_TABLE = new byte[TABLE_SIZE];
     {
         for (var i = 0; i < TABLE_SIZE; i++) {

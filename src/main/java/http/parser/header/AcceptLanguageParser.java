@@ -56,7 +56,7 @@ public class AcceptLanguageParser {
                 throw new RuntimeException("Expected 1*8alphanum");
             bs.unadvance(b);
 
-            TOKEN(bs, bfr, IS_ALPHA_DIGIT_TABLE, -1);
+            TOKEN(bs, bfr, IS_ALPHA_OR_DIGIT_TABLE, -1);
 
             if (bfr.remains() > 8)
                 throw new RuntimeException("Expected 1*8alphanum, has " + bfr.remains() + " alphanum");

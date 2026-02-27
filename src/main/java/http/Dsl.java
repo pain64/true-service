@@ -10,6 +10,65 @@ import static http.Dsl.BeforeResult.*;
 import static http.Dsl.BeforeResult.ofFailure;
 
 public class Dsl {
+    // Расширения:
+    //    1. encode / decode для MimeMessage
+    //    2. encode / decode для заголовков
+    //        2.1 специализация парсера конкретного заголовка. Например, cookie
+    //    3. Utf8Bytes encode / decode. PathParameter<T>, QueryParameter<T>, CookieParameter<T>, AuthorizationParameter<T>
+    //
+    // Эксперименты:
+    //    1. Доделать вызов сгенерированного байткода
+    //    2. Попробовать после парсера добавлять аннотацию, включающую процессинг аннотаций,
+    //        чтобы в нем уже сгенерировать новый код
+    // FormMultipart<F>
+    // FormMultipartBind().decode(F.class /* type */)
+    //     bytecode patches to concrete implementation of F.class encoder
+    // FormMultipartBind().encode(fInstance)
+
+
+    //  @Get("/") Union2<
+    //      @Sc400 @TextPlain String,
+    //      List2<
+    //          @FormMultipart @Name("name") String ,
+    //          @FormMultipart @Name("age")  Integer
+    //      >
+    //  > foo(
+    //                      Method method  ,
+    //     @Uri             String uri     ,
+    //     @PathParameter   int    id      ,
+    //     @QueryParameter  String location,
+    //     @FormMultipart   String name    ,
+    //     @FormMultipart   int    age     ,
+    //     @ApplicationJson String other   , -- compilation error: could not mix
+    //                                       -- form/multipart and application/json
+    // ) {
+    //     if (condition)
+    //         return Variant2.of1("Bad request");
+    //
+    //     return Variant2.of2(new List2<>("Lalka", 18));
+    // }
+    //
+    // !!! STARLANG VERSION !!!
+    // foo = endpoint(Get, "/", id -> {
+    //     id.v -- explicit used-decided invocation of .v on PathParameter
+    //          -- id now has PathParameter<?> type
+    //     if condition then
+    //         return [Sc400, TextPlain('Bad request')]
+    //
+    //     return [
+    //         {'name': FormMultipart('Lalka')},
+    //         {'age' : FormMultipart(18)     }
+    //     ]
+    // })
+
+    // @Get("/oops") String foo(
+    //     Method method, Uri uri,
+    //     PathParameter<Integer> id,
+    //     QueryParameter<String> location,
+    //     FormMultipart<String> name,
+    //     FormMultipart<Integer> age
+    // ) {
+    // }
 
     // TODO: all well-known headers
     // TODO: spec byStatusCode by 4

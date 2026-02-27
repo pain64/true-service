@@ -28,12 +28,24 @@ public class AcceptCharsetParser {
         var value = new ArrayList<CharsetWithWeight>();
         bfr.reset();
 
-        while (true) {
-            byte tcharOpt;
+        // #()
+        // var isNextRequired = false;
+        // do {
+        //    if (IS_END_OF_HEADER(bs, isNextRequired)) {
+        //        return value;
+        //
+        //    if(*) { WEIGHT() }
+        //    else {
+        //        TOKEN(); WEIGHT();
+        //    }
+        //
+        //    isNextRequired = true;
+        // } while(',')
 
-            if ((tcharOpt = TCHAR_OPT(bs)) == -1)
-                break;
-            else bs.unadvance(tcharOpt);
+        while (true) {
+
+            byte b = bs.advance();
+            if (IS_TCHAR_TABLE[b]) bs.unadvance(b); else break;
 
             TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
 
@@ -49,9 +61,7 @@ public class AcceptCharsetParser {
                 new CharsetWithWeight(new Charset.Star(), weight) :
                 new CharsetWithWeight(new Charset.Token(token), weight));
 
-            SKIP_OWS(bs);
-            if (CHAR_OPT(bs, ',') != -1) break;
-            SKIP_OWS(bs);
+            OWS_SYMBOL_OWS_SKIP(bs, ',');
         }
         return new AcceptCharset(value);
     }

@@ -49,10 +49,10 @@ public class Base {
         return b;
     }
 
-    public static byte CHAR_OPT(ByteStream bs, char ch) {
+    public static boolean CHAR_OPT(ByteStream bs, char ch) {
         byte b = bs.advance();
-        if (b != ch) {bs.unadvance(b); return -1;}
-        return b;
+        if (b != ch) {bs.unadvance(b); return false;}
+        return true;
     }
 
     public static void TOKEN(ByteStream bs, Buffer bfr, boolean[] TOKEN_TABLE, int max) {
@@ -136,17 +136,18 @@ public class Base {
         byte b;
 
         while (true) {
-            if ((b = CHAR_OPT(bs, '\\')) == -1) {
-                if ((b = QDTEXT_OPT(bs)) == -1 ) {
-                    break;
-                } else bfr.push(b);
-            } else {
-                bfr.push(b);
+            if (CHAR_OPT(bs, '\\')) {
+                bfr.push((byte) '\\');
 
                 if ((b = QUOTED_PAIR_OPT(bs)) == -1) {
                     throw new RuntimeException("Expected quoted pair");
                 }
+
                 bfr.push(b);
+            } else {
+                if ((b = QDTEXT_OPT(bs)) == -1 ) {
+                    break;
+                } else bfr.push(b);
             }
         }
 
