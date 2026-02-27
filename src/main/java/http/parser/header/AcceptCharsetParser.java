@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import static http.Base.*;
 import static http.Base.SKIP_OWS;
+import static http.JumpTables.IS_TCHAR_TABLE;
+import static http.JumpTables.TCHAR_OPT;
 
 public class AcceptCharsetParser {
 
@@ -33,7 +35,7 @@ public class AcceptCharsetParser {
                 break;
             else bs.unadvance(tcharOpt);
 
-            TOKEN_OPT(bs, bfr);
+            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
 
             if (bfr.remains() == 1 && bfr.bytes[0] != '*')
                 throw new RuntimeException("Expected *");
@@ -48,7 +50,7 @@ public class AcceptCharsetParser {
                 new CharsetWithWeight(new Charset.Token(token), weight));
 
             SKIP_OWS(bs);
-            if (BYTE_OPT(bs, ',') != -1) break;
+            if (CHAR_OPT(bs, ',') != -1) break;
             SKIP_OWS(bs);
         }
         return new AcceptCharset(value);

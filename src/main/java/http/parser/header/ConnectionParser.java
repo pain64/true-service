@@ -1,7 +1,5 @@
 package http.parser.header;
 
-import http.Base;
-
 import java.util.ArrayList;
 
 import static http.Base.*;

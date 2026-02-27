@@ -12,6 +12,6 @@ public class ContentLengthParser {
     }
 
     public static ContentLength CONTENT_LENGTH(ByteStream bs, Buffer bfr) {
-        return new ContentLength(AT_LEAST_1_DIGIT_NUMBER(bs));
+        return new ContentLength(ONE_OR_MORE_DIGIT(bs));
     }
 }

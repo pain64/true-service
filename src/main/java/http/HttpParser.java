@@ -1,72 +1,72 @@
 package http;
 
+import com.sun.source.tree.Tree;
+
 import java.util.ArrayList;
 
-import static http.Base.BYTE;
+import static http.Base.*;
+
 
 public class HttpParser {
-    //
-    // GET /Controller1.someMethod1 HTTP/1.1
-    // GET /Controller2.someMethod1 HTTP/1.1
+    public static final int REQUEST = 0;
+    public static final int RESPONSE = 1;
+    public final Tree<byte[]> allowedRequestTargetsPrefix;
 
-
-
-
-    public static String MEDIA_TYPE(ByteStream bs, Buffer bfr) {
-        TOKEN(bs, bfr); BYTE(bs, '/'); TOKEN(bs, bfr);
-        return bfr.toStringAndReset();
+    public HttpParser(Tree<byte[]> allowedRequestTargetsPrefix) {
+        this.allowedRequestTargetsPrefix = allowedRequestTargetsPrefix;
     }
 
+    public sealed interface HttpStartLine {
+        final class Request implements HttpStartLine {
+            public final Method METHOD;
+            public final String TARGET;
+            public final String HTTP_VERSION;
 
-    public static Header HEADER(ByteStream bs) {
 
-    }
-
-
-    public static void HTTP_REQUEST(ByteStream bs) {
-        // request line
-        var headers = new ArrayList<Header>();
-        while (true) {
-            var b = bs.advance();
-            if (b == 13 /* CR */) { LF(bs); break; }
-
-            bs.unadvance(b);
-            headers.add(HEADER(bs));
-            CR(bs); LF(bs);
+            public Request(Method method, String target, String httpVersion) {
+                METHOD = method;
+                TARGET = target;
+                HTTP_VERSION = httpVersion;
+            }
         }
+        final class Response implements HttpStartLine {
+            public final String HTTP_VERSION;
+            public final int STATUS_CODE;
+            public final String REASON_PHRASE;
 
-        CR(bs); LF(bs);
+            public Response(String httpVersion, int statusCode, String reasonPhrase) {
+                HTTP_VERSION = httpVersion;
+                STATUS_CODE = statusCode;
+                REASON_PHRASE = reasonPhrase;
+            }
+        }
     }
 
-    String token(ByteStream s) {
-        // while(current() in allowed)
+    public static class Header { }
+
+    public interface HeaderParser<T extends Header> {
+        public T PARSE_HEADER();
+    }
+
+    public abstract static class HeaderWithParser implements HeaderParser {
+        public final byte[] name;
+
+        protected HeaderWithParser(byte[] name) {
+            this.name = name;
+        }
+    }
+
+    public static HttpStartLine parseStartLine(ByteStream bs, Buffer bfr, int messageType) {
+        // messageType ? start line
+        // request: method SP request-target SP HTTP-version
+        // response: HTTP-version SP status-code SP [ reason-phrase ]
+
         return null;
     }
 
-    // returns byte length of parsed token
-    int tokenAdvanced(ByteStream s) {
-        // while(current() in allowed)
-        return -1;
-    }
-
-    record Header(String name, String value) { }
-
-    Dsl.Location locationHeader(ByteStream s) {
+    public static ArrayList<Header> parseHeaders(ByteStream bs, Buffer bfr, ArrayList<HeaderWithParser> headerWithParsers) {
+        // check for all required headers
         return null;
     }
 
-    Header header(ByteStream s) { return null; }
-    void skipHeader(ByteStream s) { }
-
-    void method(ByteStream s) {
-        token(s);
-    }
-
-    void requestLine(ByteStream s) {
-
-    }
-
-    void httpRequest(ByteStream s /* interesting headers */) {
-        requestLine(s);
-    }
 }

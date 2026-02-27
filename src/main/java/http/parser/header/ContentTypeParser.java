@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import static http.Base.*;
+import static http.JumpTables.IS_TCHAR_TABLE;
 
 public class ContentTypeParser {
     public static class ContentType {
@@ -22,10 +23,15 @@ public class ContentTypeParser {
 
     public static ContentType CONTENT_TYPE(ByteStream bs, Buffer bfr) {
         bfr.reset();
-        TOKEN(bs, bfr);
+        TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
+        if (bfr.remains() == 0) throw new RuntimeException("Expected token");
+
         var type = bfr.toStringAndReset();
-        BYTE(bs, '/');
-        TOKEN(bs, bfr);
+        CHAR(bs, '/');
+
+        TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
+        if (bfr.remains() == 0) throw new RuntimeException("Expected token");
+
         var subtype = bfr.toStringAndReset();
 
         var parameters = new ArrayList<Parameter>();

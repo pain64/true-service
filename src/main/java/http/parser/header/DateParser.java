@@ -1,6 +1,7 @@
 package http.parser.header;
 
 import static http.Base.*;
+import static http.JumpTables.DIGIT;
 
 public class DateParser {
 
@@ -47,7 +48,7 @@ public class DateParser {
     }
 
     public static String GMT(ByteStream bs) {
-        BYTE(bs, 'G');BYTE(bs, 'M');BYTE(bs, 'T');return "GMT";
+        CHAR(bs, 'G'); CHAR(bs, 'M'); CHAR(bs, 'T'); return "GMT";
     }
 
     public static int NDIGIT(ByteStream bs, int N) {
@@ -63,8 +64,8 @@ public class DateParser {
     }
 
     public static String DATE1(ByteStream bs, Buffer bfr) {
-        var day = NDIGIT(bs, 2); BYTE(bs, ' ');
-        var month = MONTH(bs, bfr); BYTE(bs, ' ');
+        var day = NDIGIT(bs, 2); CHAR(bs, ' ');
+        var month = MONTH(bs, bfr); CHAR(bs, ' ');
         bfr.reset();
         var year = NDIGIT(bs, 4);
 
@@ -72,10 +73,10 @@ public class DateParser {
     }
 
     public static String TIME_OF_DAY(ByteStream bs) {
-        var hour = NDIGIT(bs, 2); BYTE(bs, ':');
+        var hour = NDIGIT(bs, 2); CHAR(bs, ':');
         if (hour >= 24) throw new RuntimeException("Hour should be less then 24");
 
-        var minute = NDIGIT(bs, 2); BYTE(bs, ':');
+        var minute = NDIGIT(bs, 2); CHAR(bs, ':');
         if (minute >= 60) throw new RuntimeException("Minute should be less then 60");
 
         var second = NDIGIT(bs, 2);
@@ -85,9 +86,9 @@ public class DateParser {
     }
 
     public static String IMF_FIX_DATE(ByteStream bs, Buffer bfr) {
-        var dayName = DAY_NAME(bs, bfr); BYTE(bs, ','); BYTE(bs, ' ');
-        var date1 = DATE1(bs, bfr); BYTE(bs, ' ');
-        var timeOfDay = TIME_OF_DAY(bs); BYTE(bs, ' ');
+        var dayName = DAY_NAME(bs, bfr); CHAR(bs, ','); CHAR(bs, ' ');
+        var date1 = DATE1(bs, bfr); CHAR(bs, ' ');
+        var timeOfDay = TIME_OF_DAY(bs); CHAR(bs, ' ');
 
         return dayName + ", " + date1 + " " + timeOfDay + " " + GMT(bs);
     }

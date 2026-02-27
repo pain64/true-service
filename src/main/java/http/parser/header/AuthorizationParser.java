@@ -3,10 +3,9 @@ package http.parser.header;
 import java.util.ArrayList;
 
 import static http.Base.*;
-import static http.Base.BYTE_OPT;
 import static http.Base.ByteStream;
 import static http.Base.SKIP_OWS;
-import static http.Base.TOKEN_OPT;
+import static http.JumpTables.*;
 import static http.parser.header.AuthenticationInfoParser.AUTH_PARAM;
 
 public class AuthorizationParser {
@@ -30,7 +29,7 @@ public class AuthorizationParser {
         var requiresEqual = false;
 
         while (true) {
-            if ((b = TOKEN68_CHAR_OPT(bs)) == -1) return 0;
+            if ((b = TOKEN68_OPT(bs)) == -1) return 0;
             if (b == '=') requiresEqual = true;
             if (b != '=' && requiresEqual) return -1;
 
@@ -45,16 +44,16 @@ public class AuthorizationParser {
         if ((b = TCHAR_OPT(bs)) == -1) throw new RuntimeException("Expected auth schema");
         bs.unadvance(b);
 
-        TOKEN_OPT(bs, bfr);
+        TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
 
         var authSchema = bfr.toStringAndReset();
 
-        if (BYTE_OPT(bs, ' ') == -1)
+        if (CHAR_OPT(bs, ' ') == -1)
             return new Authorization(authSchema, null, null);
 
         SKIP_OWS(bs);
 
-        if (TOKEN68(bs, bfr) == 0 && (b = BYTE_OPT(bs, '\r')) != -1) {
+        if (TOKEN68(bs, bfr) == 0 && (b = CHAR_OPT(bs, '\r')) != -1) {
             bs.unadvance(b);
             return new Authorization(authSchema, bfr.toStringAndReset(), null);
         }

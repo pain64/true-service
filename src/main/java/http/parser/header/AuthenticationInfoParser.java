@@ -3,10 +3,7 @@ package http.parser.header;
 import java.util.ArrayList;
 
 import static http.Base.*;
-import static http.Base.BYTE_OPT;
-import static http.Base.Buffer;
-import static http.Base.ByteStream;
-import static http.Base.SKIP_OWS;
+import static http.JumpTables.*;
 
 public class AuthenticationInfoParser {
 
@@ -33,11 +30,11 @@ public class AuthenticationInfoParser {
             if ((b = TCHAR_OPT(bs)) == -1) break;
             else bs.unadvance(b);
 
-            TOKEN_OPT(bs, bfr);
+            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
             var tokenName = bfr.toStringAndReset();
 
             SKIP_OWS(bs);
-            BYTE(bs, '=');
+            CHAR(bs, '=');
             SKIP_OWS(bs);
 
             if ((b = TCHAR_DQUOTE_OPT(bs)) == -1)
@@ -53,7 +50,7 @@ public class AuthenticationInfoParser {
             value.add(new AuthParam.Token(tokenName, tokenValue));
 
             SKIP_OWS(bs);
-            if (BYTE_OPT(bs, ',') != -1) break;
+            if (CHAR_OPT(bs, ',') != -1) break;
             SKIP_OWS(bs);
         }
         return value;

@@ -3,8 +3,9 @@ package http.parser.header;
 import java.util.ArrayList;
 
 import static http.Base.*;
-import static http.Base.BYTE_OPT;
 import static http.Base.SKIP_OWS;
+import static http.JumpTables.IS_TCHAR_TABLE;
+import static http.JumpTables.TCHAR_OPT;
 
 public class AcceptEncodingParser {
 
@@ -36,7 +37,7 @@ public class AcceptEncodingParser {
                 break;
             else bs.unadvance(tcharOpt);
 
-            TOKEN_OPT(bs, bfr);
+            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
             var token = bfr.toStringAndReset();
 
             var weightOpt = WEIGHT_FROM_BS_OPT(bs, bfr);
@@ -50,7 +51,7 @@ public class AcceptEncodingParser {
             value.add(new EncodingWithWeight(encoding, weightOpt == -1 ? null : weightOpt));
 
             SKIP_OWS(bs);
-            if (BYTE_OPT(bs, ',') != -1) break;
+            if (CHAR_OPT(bs, ',') != -1) break;
             SKIP_OWS(bs);
         }
         return new AcceptEncoding(value);

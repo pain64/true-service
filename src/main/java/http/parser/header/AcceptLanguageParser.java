@@ -3,10 +3,9 @@ package http.parser.header;
 import java.util.ArrayList;
 
 import static http.Base.*;
-import static http.Base.ALPHA_DIGIT_TOKEN;
-import static http.Base.BYTE_OPT;
 import static http.Base.ByteStream;
 import static http.Base.SKIP_OWS;
+import static http.JumpTables.*;
 
 public class AcceptLanguageParser {
 
@@ -43,21 +42,21 @@ public class AcceptLanguageParser {
             bs.unadvance(b);
             bfr.reset();
 
-            ALPHA_TOKEN(bs, bfr);
+            TOKEN(bs, bfr, IS_ALPHA_TABLE, -1);
 
             if (bfr.remains() > 8)
                 throw new RuntimeException("Expected 1*8ALPHA, has " + bfr.remains() + " ALPHA");
 
             var rangeStart = bfr.toStringAndReset();
 
-            if (BYTE_OPT(bs, '-') == -1)
+            if (CHAR_OPT(bs, '-') == -1)
                 return new LanguageRange.One(rangeStart);
 
             if ((b = ALPHA_DIGIT_OPT(bs)) == -1)
                 throw new RuntimeException("Expected 1*8alphanum");
             bs.unadvance(b);
 
-            ALPHA_DIGIT_TOKEN(bs, bfr);
+            TOKEN(bs, bfr, IS_ALPHA_DIGIT_TABLE, -1);
 
             if (bfr.remains() > 8)
                 throw new RuntimeException("Expected 1*8alphanum, has " + bfr.remains() + " alphanum");
@@ -82,7 +81,7 @@ public class AcceptLanguageParser {
             value.add(new LanguageRangeWithWeight(languageRange, weightOpt != -1 ? weightOpt : null));
 
             SKIP_OWS(bs);
-            if (BYTE_OPT(bs, ',') != -1) break;
+            if (CHAR_OPT(bs, ',') != -1) break;
             SKIP_OWS(bs);
         }
 

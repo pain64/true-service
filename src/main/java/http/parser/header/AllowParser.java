@@ -3,10 +3,11 @@ package http.parser.header;
 import java.util.ArrayList;
 
 import static http.Base.*;
-import static http.Base.BYTE_OPT;
 import static http.Base.Buffer;
 import static http.Base.ByteStream;
 import static http.Base.SKIP_OWS;
+import static http.JumpTables.IS_TCHAR_TABLE;
+import static http.JumpTables.TCHAR_OPT;
 
 public class AllowParser {
 
@@ -27,7 +28,7 @@ public class AllowParser {
         bs.unadvance(b);
 
         while (true) {
-            TOKEN_OPT(bs, bfr);
+            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
             var token = bfr.toStringAndReset();
 
             value.add(
@@ -45,7 +46,7 @@ public class AllowParser {
                 });
 
             SKIP_OWS(bs);
-            if (BYTE_OPT(bs, ',') != -1) break;
+            if (CHAR_OPT(bs, ',') != -1) break;
             SKIP_OWS(bs);
         }
 

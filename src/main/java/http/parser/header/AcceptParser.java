@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import static http.Base.*;
+import static http.JumpTables.IS_TCHAR_TABLE;
+import static http.JumpTables.TCHAR_OPT;
 
 public class AcceptParser {
     //Accept = [ ( media-range [ weight ] ) *( OWS "," OWS ( media-range [weight ] ) ) ]
@@ -33,21 +35,21 @@ public class AcceptParser {
             return null;
 
         if (b == '*') {
-            BYTE(bs, '/'); BYTE(bs, '*');
+            CHAR(bs, '/'); CHAR(bs, '*');
             return new MediaRangeTypes.StarStar();
         } else bs.unadvance(b);
 
-        TOKEN_OPT(bs, bfr);
+        TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
 
         var type = bfr.toStringAndReset();
-        BYTE(bs, '/');
+        CHAR(bs, '/');
 
         if ((b = bs.advance()) == '*') {
             return new MediaRangeTypes.TokenStar(type);
         } else bs.unadvance(b);
 
         bfr.reset();
-        TOKEN_OPT(bs, bfr);
+        TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
 
         if (bfr.remains() == 0)
             throw new RuntimeException("Expected token");
@@ -85,7 +87,7 @@ public class AcceptParser {
                     weightOpt != -1 ? weightOpt : null)
             );
 
-            if (!OWS_COMMA_OWS(bs)) break;
+            if (!OWS_SYMBOL_OWS_SKIP(bs, ',')) break;
         }
         return new Accept(value);
     }
