@@ -1,32 +1,30 @@
-package http.parser.header;
-
-import http.Base;
+package http.header;
 
 import static http.Base.*;
 import static http.URIParser.IS_SUBDELIM;
 import static http.URIParser.IS_UNRESERVED;
 
-public class HostParser {
+public class HostHeader {
 
     public static String IP_V6ADDRESS(ByteStream bs, Buffer bfr) {
 
     }
 
     public static String IP_VFUTURE(ByteStream bs, Buffer bfr) {
-        bfr.push(BYTE(bs, 'v')); bfr.push(HEXDIG(bs));
-        byte b; while ((b = HEXDIG_OPT(bs)) != -1) bfr.push(b);
-        bfr.push(BYTE(bs, '.'));
+        bfr.push(CHAR(bs, 'v')); bfr.push(HEXDIG(bs));
+        while (HEXDIG_CHECK(bs)) bfr.push(bs.advance());
+        bfr.push(CHAR(bs, '.'));
 
-        b = bs.advance();
+        var b = bs.advance();
+
         if (!(IS_UNRESERVED(b) || IS_SUBDELIM(b) || b == ':'))
             throw new RuntimeException("Expected unreserved / subdelim / :");
-        else bfr.push(b);
+        b = bs.advance();
 
-        while (true) {
+        do {
+            bfr.push(b);
             b = bs.advance();
-            if (!(IS_UNRESERVED(b) || IS_SUBDELIM(b) || b == ':')) {bs.unadvance(b); break;}
-            else bfr.push(b);
-        }
+        } while (IS_UNRESERVED(b) || IS_SUBDELIM(b) || b == ':');
 
         return bfr.toStringAndReset();
     }
@@ -42,7 +40,7 @@ public class HostParser {
         for (var i = 0; i < 4; i++) {
             var k = 0;
             while (k < 3) {
-                b = (k == 0) ? DIGIT(bs) : DIGIT_OPT(bs);
+                b = (k == 0) ? DIGIT(bs) : DIGIT_CHECK(bs);
                 if (b != -1) bfr.push(b);
                 else break;
                 k++;

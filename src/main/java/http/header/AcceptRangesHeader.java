@@ -1,13 +1,13 @@
-package http.parser.header;
+package http.header;
 
 import java.util.ArrayList;
 
 import static http.Base.*;
-import static http.Base.SKIP_OWS;
+import static http.HttpParser.*;
 import static http.JumpTables.IS_TCHAR_TABLE;
-import static http.JumpTables.TCHAR_OPT;
+import static http.header.AcceptRangesHeader.*;
 
-public class AcceptRangesParser {
+public class AcceptRangesHeader implements HeaderParser<AcceptRanges>, HeaderEncoder<AcceptRanges> {
 
     public sealed interface Range {
         record None() implements Range { }
@@ -15,7 +15,7 @@ public class AcceptRangesParser {
         record Token(String value) implements Range { }
     }
 
-    public static class AcceptRanges {
+    public static class AcceptRanges extends Header {
         public final ArrayList<Range> value;
 
         public AcceptRanges(ArrayList<Range> value) {
@@ -23,20 +23,13 @@ public class AcceptRangesParser {
         }
     }
 
-    public static AcceptRanges ACCEPT_RANGES(ByteStream bs, Buffer bfr) {
+    @Override
+    public AcceptRanges PARSE_HEADER(ByteStream bs, Buffer bfr) {
         var value = new ArrayList<Range>();
-        bfr.reset();
 
-        var finded = false;
-        byte b;
-        while (true) {
-            if ((b = TCHAR_OPT(bs)) == -1) {
-                if (!finded)
-                    throw new RuntimeException("Expected range-unit");
-                else break;
-            }
+        do {
+            if (!TCHAR_CHECK(bs)) throw new RuntimeException("Expected range-unit");
 
-            bs.unadvance(b);
             TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
             var token = bfr.toStringAndReset();
 
@@ -45,14 +38,13 @@ public class AcceptRangesParser {
                     case "none" -> new Range.None();
                     case "bytes" -> new Range.Bytes();
                     default -> new Range.Token(token);
-            });
-            finded = true;
-
-            SKIP_OWS(bs);
-            if (CHAR_OPT(bs, ',') != -1) break;
-            SKIP_OWS(bs);
-        }
-
+                });
+        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
         return new AcceptRanges(value);
+    }
+
+    @Override
+    public byte[] ENCODE_HEADER(AcceptRanges header) {
+        return new byte[0];
     }
 }

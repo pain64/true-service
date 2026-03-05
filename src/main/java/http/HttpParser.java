@@ -45,7 +45,11 @@ public class HttpParser {
     public static class Header { }
 
     public interface HeaderParser<T extends Header> {
-        public T PARSE_HEADER();
+        public T PARSE_HEADER(ByteStream bs, Buffer bfr);
+    }
+
+    public interface HeaderEncoder<T extends Header> {
+        public byte[] ENCODE_HEADER(T header);
     }
 
     public abstract static class HeaderWithParser implements HeaderParser {

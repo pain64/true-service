@@ -1,13 +1,17 @@
-package http.parser.header;
+package http.header;
+
+import http.HttpParser.Header;
+import http.HttpParser.HeaderEncoder;
+import http.HttpParser.HeaderParser;
+
 
 import java.util.ArrayList;
 
 import static http.Base.*;
-import static http.Base.SKIP_OWS;
 import static http.JumpTables.IS_TCHAR_TABLE;
-import static http.JumpTables.TCHAR_OPT;
+import static http.header.AcceptEncodingHeader.*;
 
-public class AcceptEncodingParser {
+public class AcceptEncodingHeader implements HeaderParser<AcceptEncoding>, HeaderEncoder<AcceptEncoding> {
 
     public sealed interface Encoding {
         record Star() implements Encoding { }
@@ -17,7 +21,7 @@ public class AcceptEncodingParser {
 
     public record EncodingWithWeight (Encoding encoding, Float weight) {}
 
-    public static class AcceptEncoding {
+    public static class AcceptEncoding extends Header {
         public final ArrayList<EncodingWithWeight> value;
 
         public AcceptEncoding(ArrayList<EncodingWithWeight> value) {
@@ -25,22 +29,13 @@ public class AcceptEncodingParser {
         }
     }
 
-    // [ ( codings [ weight ] ) *( OWS "," OWS ( codings [weight ] ) ) ]
-    public static AcceptEncoding ACCEPT_ENCODING(ByteStream bs, Buffer bfr) {
+    @Override
+    public AcceptEncoding PARSE_HEADER(ByteStream bs, Buffer bfr) {
         var value = new ArrayList<EncodingWithWeight>();
-        bfr.reset();
 
-        while (true) {
-            byte tcharOpt;
-
-            if ((tcharOpt = TCHAR_OPT(bs)) == -1)
-                break;
-            else bs.unadvance(tcharOpt);
-
+        while (TCHAR_CHECK(bs)) {
             TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
             var token = bfr.toStringAndReset();
-
-            var weightOpt = WEIGHT_FROM_BS_OPT(bs, bfr);
 
             var encoding = switch (token) {
                 case "*" -> new Encoding.Star();
@@ -48,12 +43,16 @@ public class AcceptEncodingParser {
                 default -> new Encoding.Token(token);
             };
 
+            var weightOpt = WEIGHT_OPT(bs, bfr);
             value.add(new EncodingWithWeight(encoding, weightOpt == -1 ? null : weightOpt));
 
-            SKIP_OWS(bs);
-            if (CHAR_OPT(bs, ',') != -1) break;
-            SKIP_OWS(bs);
+            if (!OWS_SYMBOL_OWS_SKIP(bs, ',')) break;
         }
         return new AcceptEncoding(value);
+    }
+
+    @Override
+    public byte[] ENCODE_HEADER(AcceptEncoding header) {
+        return new byte[0];
     }
 }

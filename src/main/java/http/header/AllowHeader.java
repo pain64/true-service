@@ -1,17 +1,16 @@
-package http.parser.header;
+package http.header;
 
 import java.util.ArrayList;
 
 import static http.Base.*;
 import static http.Base.Buffer;
 import static http.Base.ByteStream;
-import static http.Base.SKIP_OWS;
+import static http.HttpParser.*;
 import static http.JumpTables.IS_TCHAR_TABLE;
-import static http.JumpTables.TCHAR_OPT;
 
-public class AllowParser {
+public class AllowHeader implements HeaderParser<AllowHeader.Allow>, HeaderEncoder<AllowHeader.Allow> {
 
-    public static class Allow {
+    public static class Allow extends Header {
         public final ArrayList<Method> value;
 
         public Allow(ArrayList<Method> value) {
@@ -19,15 +18,11 @@ public class AllowParser {
         }
     }
 
-    public static Allow ALLOW(ByteStream bs, Buffer bfr) {
+    @Override
+    public Allow PARSE_HEADER(ByteStream bs, Buffer bfr) {
         var value = new ArrayList<Method>();
-        bfr.reset();
 
-        byte b;
-        if ((b = TCHAR_OPT(bs)) == -1) return null;
-        bs.unadvance(b);
-
-        while (true) {
+        while (TCHAR_CHECK(bs)) {
             TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
             var token = bfr.toStringAndReset();
 
@@ -45,11 +40,14 @@ public class AllowParser {
                     default -> new Method.Token(token);
                 });
 
-            SKIP_OWS(bs);
-            if (CHAR_OPT(bs, ',') != -1) break;
-            SKIP_OWS(bs);
+            OWS_SYMBOL_OWS_SKIP(bs, ',');
         }
 
         return new Allow(value);
+    }
+
+    @Override
+    public byte[] ENCODE_HEADER(Allow header) {
+        return new byte[0];
     }
 }
