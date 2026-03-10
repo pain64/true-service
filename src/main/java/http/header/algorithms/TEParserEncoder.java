@@ -22,7 +22,7 @@ public class TEParserEncoder implements HeaderParser<TE>, HeaderEncoder<TE> {
             var transferCoding = bfr.toStringAndReset();
             if ("trailers".equals(transferCoding)) tCoding = new TCoding.Trailers();
             else {
-                while (OWS_SYMBOL_OWS_SKIP(bs, ';')) {
+                while (OWS_DELIMITER_OWS_SKIP(bs, ';')) {
                     if (IS_CHAR(bs, 'q')) weight = WEIGHT(bs, bfr);
                     else {
                         var paramNameLength = PARAMETER(bs, bfr);
@@ -34,7 +34,7 @@ public class TEParserEncoder implements HeaderParser<TE>, HeaderEncoder<TE> {
             }
 
             value.add(tCoding);
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
         return null;
     }
 

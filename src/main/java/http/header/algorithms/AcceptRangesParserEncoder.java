@@ -19,7 +19,7 @@ public class AcceptRangesParserEncoder implements HeaderParserMultiline<AcceptRa
                     case "bytes" -> new AcceptRangeType.Bytes();
                     default -> new AcceptRangeType.Token(token);
                 });
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
     }
 
     @Override

@@ -26,7 +26,7 @@ public class UpgradeParserEncoder implements HeaderParser<Upgrade>, HeaderEncode
                 }
 
                 value.add(new Protocol(name, version));
-            } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+            } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
         }
 
         return new Upgrade(value);

@@ -29,7 +29,7 @@ public class RangeParserEncoder implements HeaderParser<Range>, HeaderEncoder<Ra
             }
 
             value.add(rangeSpec);
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
 
         return new Range("bytes".equals(rangeUnit) ? new RangeUnit.Bytes() : new RangeUnit.Token(rangeUnit), value);
     }

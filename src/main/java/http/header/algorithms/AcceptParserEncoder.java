@@ -39,7 +39,7 @@ public class AcceptParserEncoder implements HeaderParserMultiline<MediaRange>, H
             Float weight = null;
             var parameters = new ArrayList<Parameter>();
 
-            while (OWS_SYMBOL_OWS_SKIP(bs, ';')) {
+            while (OWS_DELIMITER_OWS_SKIP(bs, ';')) {
                 bfr.reset();
                 if (IS_CHAR(bs, 'q')) weight = WEIGHT(bs, bfr);
                 else {
@@ -50,7 +50,7 @@ public class AcceptParserEncoder implements HeaderParserMultiline<MediaRange>, H
             }
 
             toAdd.add(new MediaRange(mediaRangeType, parameters, weight));
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
     }
 
     @Override

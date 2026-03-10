@@ -28,7 +28,7 @@ public class ExpectParserEncoder implements HeaderParser<Expect>, HeaderEncoder<
                 tokenValue = bfr.toStringAndReset();
             }
 
-            while (OWS_SYMBOL_OWS_SKIP(bs, ';')) {
+            while (OWS_DELIMITER_OWS_SKIP(bs, ';')) {
                 var paramNameLength = PARAMETER(bs, bfr);
                 parameters.add(new Parameter(
                     new String(bfr.bytes, 0, paramNameLength, StandardCharsets.UTF_8),
@@ -37,7 +37,7 @@ public class ExpectParserEncoder implements HeaderParser<Expect>, HeaderEncoder<
             }
 
             value.add(new Expectation(name, tokenValue, parameters));
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
 
         return new Expect(value);
     }

@@ -9,6 +9,7 @@ import static http.BaseParser.*;
 import static http.JumpTables.IS_SCHEME_TABLE;
 import static http.JumpTables.IS_UNRESERVED_OR_SUBDELIMS_TABLE;
 
+// UriParser
 public class URIParser {
 
     public sealed interface Host {

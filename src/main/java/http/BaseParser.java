@@ -94,7 +94,7 @@ public class BaseParser {
         return IS_QUOTED_PAIR_TABLE[b];
     }
 
-    public static void TOKEN(ByteStream bs, Buffer bfr, boolean[] IS_TOKEN_CHAR_TABLE) {
+    private static void TOKEN(ByteStream bs, Buffer bfr, boolean[] IS_TOKEN_CHAR_TABLE) {
         var b = bs.advance();
         if (!IS_TOKEN_CHAR_TABLE[b]) throw new RuntimeException("Expected token");
 
@@ -155,7 +155,7 @@ public class BaseParser {
         byte b; while (true) {b = bs.advance(); if (!(b == ' ' || b == '\t')) {bs.unadvance(b); break;}}
     }
 
-    public static boolean OWS_SYMBOL_OWS_SKIP(ByteStream bs, char ch) {
+    public static boolean OWS_DELIMITER_OWS_SKIP(ByteStream bs, char ch) {
         SKIP_OWS(bs);
         var v = IS_CHAR(bs, ch);
         if (v) bs.advance();
@@ -170,7 +170,7 @@ public class BaseParser {
         do {
             TOKEN_TCHAR(bs, bfr);
             value.add(bfr.toStringAndReset());
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
 
         return value;
     }
@@ -317,13 +317,13 @@ public class BaseParser {
             TOKEN_TCHAR(bs, bfr);
             var tokenName = bfr.toStringAndReset();
 
-            if (!OWS_SYMBOL_OWS_SKIP(bs, '=')) throw new RuntimeException("Expected =");
+            if (!OWS_DELIMITER_OWS_SKIP(bs, '=')) throw new RuntimeException("Expected =");
 
             if (IS_CHAR(bs, '"')) QUOTED_STRING(bs, bfr);
             else TOKEN_TCHAR(bs, bfr);
 
             value.add(new AuthParam.Token(tokenName, bfr.toStringAndReset()));
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
 
         return value;
     }
@@ -354,7 +354,7 @@ public class BaseParser {
         var entityTag = ENTITY_TAG_OPT(bs, bfr);
         if (entityTag != null) value.add(entityTag);
 
-        while (OWS_SYMBOL_OWS_SKIP(bs, ',')) value.add(entityTag);
+        while (OWS_DELIMITER_OWS_SKIP(bs, ',')) value.add(entityTag);
 
         return new MatchEntitiesTags.EntitiesTags(value);
     }

@@ -28,7 +28,7 @@ public class AllowParserEncoder implements HeaderParserMultiline<Method>, Header
                     case "PATCH" -> new Method.Patch();
                     default -> new Method.Token(token);
                 });
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
     }
 
     @Override

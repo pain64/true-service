@@ -1,22 +1,50 @@
 package http.header.algorithms;
 
 import http.BaseEncoder;
-import http.header.DTOs;
 
+import java.net.URI;
 import java.util.ArrayList;
 
 import static http.BaseParser.*;
-import static http.BaseEncoder.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
+
+// interface HeaderParser<H extends Header> {
+//     H encode(ByteStream bs, Buffer bfr);
+//     void decode(...);
+// }
+
+// 1. Добавить bs.current() для LL(1) случаев
+// 2. Float weight = null; -> var weight = (Float) null;
+// 3. UpgradeParserEncoder: parse - переместить if в начало
+// 4. все методы парсеров в encode и decode
+// 5. выбрасывание ошибок:
+//     1. HeaderDecodeException (bs.position(), message)
+// 6.
+//    interface Header {} // marker interface
+//    interface ValueListHeader<V> extends Header {
+//       ArrayList<V> values()
+//    }
+//
+//    interface ValueListHeaderEncoder<V, H extends ValueList<V>> {
+//        H<V> create();
+//        void decode(ByteStream bs, Buffer bfr, ArrayList<V> dest);
+//    }
+//
+// 7. URI - path parameter parser, query parameter parser
+// 8. Fast-path на деревьях как static-final
+// 9. CORS-headers
+// 10.
+//
 
 public class AcceptCharsetParserEncoder implements HeaderParserMultiline<CharsetWithWeight>, HeaderEncoderMultiline<AcceptCharset> {
     @Override
     public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<CharsetWithWeight> toAdd) {
-        if (!IS_TCHAR(bs)) return;
+        
+        if (!IS_TCHAR(bs)) return; // if accept list is empty
 
         do {
-            Charset charset;
+            final Charset charset;
 
             if (IS_CHAR(bs, '*')) charset = new Charset.Star();
             else {
@@ -32,7 +60,7 @@ public class AcceptCharsetParserEncoder implements HeaderParserMultiline<Charset
             }
 
             toAdd.add(new CharsetWithWeight(charset, weight));
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
     }
 
     @Override

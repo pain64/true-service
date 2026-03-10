@@ -18,7 +18,7 @@ public class VaryParserEncoder implements HeaderParser<Vary>, HeaderEncoder<Vary
             do {
                 TOKEN_TCHAR(bs, bfr);
                 value.add(bfr.toStringAndReset());
-            } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+            } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
 
             varyType = new VaryType.Fields(value);
         }

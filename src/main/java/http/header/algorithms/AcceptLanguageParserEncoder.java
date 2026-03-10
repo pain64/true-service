@@ -1,5 +1,6 @@
 package http.header.algorithms;
 
+import http.BaseEncoder;
 import http.HttpParser.*;
 
 import java.util.ArrayList;
@@ -22,9 +23,6 @@ public class AcceptLanguageParserEncoder implements HeaderParserMultiline<Langua
         if (!IS_CHAR(bs, '-')) return new LanguageRange.One(rangeStart);
         bs.advance();
 
-        var b = ALPHA_DIGIT(bs);
-        bs.unadvance(b);
-
         TOKEN_ALPHA_OR_DIGIT(bs, bfr);
 
         if (bfr.remains() > 8)
@@ -40,7 +38,7 @@ public class AcceptLanguageParserEncoder implements HeaderParserMultiline<Langua
         do {
             var languageRange = LANGUAGE_RANGE(bs, bfr);
 
-            Float weight = null;
+            var weight = (Float) null;
             SKIP_OWS(bs);
             if (IS_CHAR(bs, ';')) {
                 bs.advance(); SKIP_OWS(bs);
@@ -48,12 +46,10 @@ public class AcceptLanguageParserEncoder implements HeaderParserMultiline<Langua
             }
 
             toAdd.add(new LanguageRangeWithWeight(languageRange, weight));
-        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
     }
 
-    @Override
-    public void ENCODE_HEADER(ResponseByteStream rbs, AcceptLanguage header) {
-        return new byte[0];
-    }
+    @Override public void ENCODE_HEADER(BaseEncoder.ResponseByteStream rbs, AcceptLanguage header) {
 
+    }
 }

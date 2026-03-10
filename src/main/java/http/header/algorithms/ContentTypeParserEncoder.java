@@ -20,7 +20,7 @@ public class ContentTypeParserEncoder implements HeaderParser<ContentType>, Head
         var subtype = bfr.toStringAndReset();
 
         var parameters = new ArrayList<Parameter>();
-        while (OWS_SYMBOL_OWS_SKIP(bs, ';')) {
+        while (OWS_DELIMITER_OWS_SKIP(bs, ';')) {
             var paramNameLength = PARAMETER(bs, bfr);
             parameters.add(
                 new Parameter(
