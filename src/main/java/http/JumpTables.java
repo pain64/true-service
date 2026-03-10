@@ -53,6 +53,19 @@ public class JumpTables {
         }
     }
 
+    //CTEXT попадет в кеш
+    public static final boolean[] IS_UNRESERVED_OR_SUBDELIMS_TABLE = new boolean[TABLE_SIZE];
+    {
+        for (var i = 0; i < TABLE_SIZE; i++) {
+            var b = (byte) i;
+            IS_UNRESERVED_OR_SUBDELIMS_TABLE[i] = (
+                (b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z') || (b >= '0' && b <= '9') //UNRESERVED
+                    || b == '-' || b == '.' || b == '_' || b == '~' //UNRESERVED
+                    || b == '!' || b == '$' || b == '&' || b == '\'' || b == '(' || b == ')' //SUBDELIM
+                    || b == '*' || b == '+' || b == ',' || b == ';' || b == '='); //SUBDELIM
+        }
+    }
+
     //QDTEXT попадет в кеш
     public static final boolean[] IS_QDTEXT_TABLE = new boolean[2*TABLE_SIZE];
     {
@@ -87,4 +100,13 @@ public class JumpTables {
         }
     }
 
+    //CTEXT попадет в кеш
+    public static final boolean[] IS_CTEXT_TABLE = new boolean[TABLE_SIZE];
+    {
+        for (var i = 0; i < TABLE_SIZE; i++) {
+            var b = (byte) i;
+            IS_CTEXT_TABLE[i] = (b == '\t' || b == ' '
+                || (b >= '!' && b <= '\'') || (b >= '*' && b <= '[') || (b >= ']' && b <= '~'));
+        }
+    }
 }

@@ -1,10 +1,11 @@
 package http;
 
 import com.sun.source.tree.Tree;
+import http.BaseEncoder.ResponseByteStream;
 
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 
 
 public class HttpParser {
@@ -43,33 +44,31 @@ public class HttpParser {
     }
 
     public static class Header { }
+    public static class MultiLine<T> extends Header { }
 
     public interface HeaderParser<T extends Header> {
         public T PARSE_HEADER(ByteStream bs, Buffer bfr);
     }
 
+    public interface HeaderParserMultiline<T> {
+        public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<T> toAdd);
+    }
+
     public interface HeaderEncoder<T extends Header> {
-        public byte[] ENCODE_HEADER(T header);
+        public void ENCODE_HEADER(ResponseByteStream rbs, T header);
     }
 
-    public abstract static class HeaderWithParser implements HeaderParser {
-        public final byte[] name;
-
-        protected HeaderWithParser(byte[] name) {
-            this.name = name;
-        }
+    public interface HeaderEncoderMultiline<T extends Header> {
+        public void ENCODE_HEADER(ResponseByteStream rbs, Buffer bfr, T h);
     }
+
+
 
     public static HttpStartLine parseStartLine(ByteStream bs, Buffer bfr, int messageType) {
         // messageType ? start line
         // request: method SP request-target SP HTTP-version
         // response: HTTP-version SP status-code SP [ reason-phrase ]
 
-        return null;
-    }
-
-    public static ArrayList<Header> parseHeaders(ByteStream bs, Buffer bfr, ArrayList<HeaderWithParser> headerWithParsers) {
-        // check for all required headers
         return null;
     }
 

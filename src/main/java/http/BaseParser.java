@@ -1,12 +1,11 @@
 package http;
 
-import http.HttpParser.Header;
 import java.util.ArrayList;
 
 import static http.JumpTables.*;
 import static http.header.DTOs.*;
 
-public class Base {
+public class BaseParser {
 
     static final int MAX_TOKEN_LENGTH = 1024;
 
@@ -32,10 +31,6 @@ public class Base {
         byte advance(); // increment position and get current
     }
 
-    public interface ResponseByteStream {
-        void push(char b);
-        void push(byte b);
-    }
 
     public static byte CHAR(ByteStream bs, char ch) {
         byte b = bs.advance();

@@ -1,16 +1,59 @@
 package http;
 
-import http.Base.Buffer;
-import http.Base.ByteStream;
+import http.BaseParser.Buffer;
+import http.BaseParser.ByteStream;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.JumpTables.IS_SCHEME_TABLE;
 import static http.JumpTables.IS_UNRESERVED_OR_SUBDELIMS_TABLE;
 
-public class URI {
+public class URIParser {
+
+    public sealed interface Host {
+        record RegName(String value) implements Host {}
+        record IpV4Address(String value) implements Host {}
+        record IpV6Address(String value) implements Host {}
+    }
+
+    public static class Authority {
+        public final String userInfo;
+        public final Host host;
+        public final int port;
+
+        public Authority(String userInfo, Host host, int port) {
+            this.userInfo = userInfo;
+            this.host = host;
+            this.port = port;
+        }
+    }
+
+    public sealed interface Q {
+        record Int(String name, int value) implements Q {}
+    }
+
+    public static class PartialURI {
+        public final Authority authority;
+        public final String path;
+        public final ArrayList<Q> query;
+
+        public PartialURI(Authority authority, String path, ArrayList<Q> query) {
+            this.authority = authority;
+            this.path = path;
+            this.query = query;
+        }
+    }
+
+    public static class AbsoluteURI {
+        public final String scheme;
+        public final PartialURI relativePart;
+
+        public AbsoluteURI(String scheme, PartialURI relativePart) {
+            this.scheme = scheme;
+            this.relativePart = relativePart;
+        }
+    }
 
     public static String SCHEME(ByteStream bs, Buffer bfr) {
         bfr.push(ALPHA(bs));
@@ -35,11 +78,11 @@ public class URI {
         return bfr.toStringAndReset();
     }
 
-    public static InetAddress IP_V6ADDRESS(ByteStream bs, Buffer bfr) {
+    public static String IP_V6ADDRESS(ByteStream bs, Buffer bfr) {
 
     }
 
-    public static InetAddress IP_LITERAL(ByteStream bs, Buffer bfr) {
+    public static String IP_LITERAL(ByteStream bs, Buffer bfr) {
         CHAR(bs, '[');
         var ipv6Address = IP_V6ADDRESS(bs, bfr);
         CHAR(bs, ']');
@@ -47,27 +90,44 @@ public class URI {
         return ipv6Address;
     }
 
-    public static InetAddress IP_V4ADDRESS(ByteStream bs) throws UnknownHostException {
-        byte[] inetAddressBytes = new byte[]{0,0,0,0};
+    public static boolean IP_V4ADDRESS_OPT(ByteStream bs, Buffer bfr) {
 
-        for (var i = 0; i < 4; i++) {
+        var isV4Address = true;
+        var i = 0;
+        while (i < 4) {
+
             var k = 0;
             while (k < 3) {
-                if (k == 0 || DIGIT_CHECK(bs)) {
-                    if (k == 0) inetAddressBytes[i] = (byte) (DIGIT(bs) - '0');
-                    else inetAddressBytes[i] = (byte) ((inetAddressBytes[i] * 10) + (DIGIT(bs) - '0'));
-                    k++;
-                }
+                if (IS_DIGIT(bs)) {bfr.push(DIGIT(bs)); k++; }
                 else break;
             }
 
-            if (i != 3) CHAR(bs, '.');
+            if (k == 0) {isV4Address = false; break;}
+
+            if (
+                !(
+                    (k == 2 && bfr.getLast(2) >= '1') ||
+                        ((k == 3) && (bfr.getLast(3) == '1' || (bfr.getLast(3) == '2' && bfr.getLast(2) <= '5' && bfr.getLast(1) <= '5')))
+                )
+            ) { isV4Address = false; break; }
+
+            if (i != 3) {
+                if (!IS_CHAR(bs, '.')) {isV4Address = false; break;};
+                bfr.push(CHAR(bs, '.'));
+            }
+            i++;
         }
 
-        return InetAddress.getByAddress(inetAddressBytes);
+        if (!isV4Address) {
+            for (var j = 0; j < bfr.remains(); j++) bs.unadvance(bfr.bytes[bfr.remains()-1-j]);
+            bfr.reset();
+            return false;
+        }
+
+        return true;
     }
 
-    public static InetAddress REG_NAME(ByteStream bs, Buffer bfr) {
+    public static String REG_NAME(ByteStream bs, Buffer bfr) {
         byte b = bs.advance();
         while (b == '%' || IS_UNRESERVED_OR_SUBDELIMS_TABLE[b]) {
             bfr.push(b);
@@ -81,13 +141,15 @@ public class URI {
     }
 
     public static String HOST(ByteStream bs, Buffer bfr) {
-
+        if (IS_CHAR(bs, '[')) return IP_V6ADDRESS(bs, bfr);
+        else if (IP_V4ADDRESS_OPT(bs, bfr)) return bfr.toStringAndReset();
+        return REG_NAME(bs, bfr);
     }
 
     public static int PORT(ByteStream bs) {
-        var value = DIGIT_CHECK(bs) ? DIGIT(bs) - '0' : -1;
+        var value = IS_DIGIT(bs) ? DIGIT(bs) - '0' : -1;
 
-        while(DIGIT_CHECK(bs)) {
+        while(IS_DIGIT(bs)) {
             value += value * 10 + (DIGIT(bs) - '0');
         }
         return value;
