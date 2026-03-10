@@ -3,7 +3,7 @@ package http.header.algorithms;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -33,7 +33,7 @@ public class ContentTypeParserEncoder implements HeaderParser<ContentType>, Head
     }
 
     @Override
-    public byte[] ENCODE_HEADER(ContentType header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, ContentType header) {
         return new byte[0];
     }
 }

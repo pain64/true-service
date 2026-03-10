@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -13,7 +13,7 @@ public class ETagParserEncoder implements HeaderParser<ETag>, HeaderEncoder<ETag
     }
 
     @Override
-    public byte[] ENCODE_HEADER(ETag header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, ETag header) {
         return new byte[0];
     }
 }

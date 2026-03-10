@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -34,7 +34,7 @@ public class ContentRangeParserEncoder implements HeaderParser<ContentRange>, He
     }
 
     @Override
-    public byte[] ENCODE_HEADER(ContentRange header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, ContentRange header) {
         return new byte[0];
     }
 

@@ -2,7 +2,7 @@ package http.header.algorithms;
 
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -33,7 +33,7 @@ public class UpgradeParserEncoder implements HeaderParser<Upgrade>, HeaderEncode
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Upgrade header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Upgrade header) {
         return new byte[0];
     }
 }

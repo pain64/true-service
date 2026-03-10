@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -11,7 +11,7 @@ public class ContentEncodingParserEncoder implements HeaderParser<ContentEncodin
     }
 
     @Override
-    public byte[] ENCODE_HEADER(ContentEncoding header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, ContentEncoding header) {
         return new byte[0];
     }
 

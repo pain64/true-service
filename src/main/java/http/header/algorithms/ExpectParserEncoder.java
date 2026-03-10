@@ -3,7 +3,7 @@ package http.header.algorithms;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -43,7 +43,7 @@ public class ExpectParserEncoder implements HeaderParser<Expect>, HeaderEncoder<
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Expect header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Expect header) {
         return new byte[0];
     }
 

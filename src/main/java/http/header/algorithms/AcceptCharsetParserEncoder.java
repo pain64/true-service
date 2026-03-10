@@ -1,22 +1,19 @@
 package http.header.algorithms;
 
+import http.BaseEncoder;
+import http.header.DTOs;
+
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
+import static http.BaseEncoder.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class AcceptCharsetParserEncoder implements HeaderParserArray<CharsetWithWeight>, HeaderEncoder<AcceptCharset> {
+public class AcceptCharsetParserEncoder implements HeaderParserMultiline<CharsetWithWeight>, HeaderEncoderMultiline<AcceptCharset> {
     @Override
-    public ArrayList<CharsetWithWeight> PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<CharsetWithWeight> toAdd) {
-        return null;
-    }
-
-    @Override
-    public AcceptCharset PARSE_HEADER(ByteStream bs, Buffer bfr) {
-        var value = new ArrayList<CharsetWithWeight>();
-
-        if (!IS_TCHAR(bs)) return new AcceptCharset(value);
+    public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<CharsetWithWeight> toAdd) {
+        if (!IS_TCHAR(bs)) return;
 
         do {
             Charset charset;
@@ -34,15 +31,33 @@ public class AcceptCharsetParserEncoder implements HeaderParserArray<CharsetWith
                 weight = WEIGHT(bs, bfr);
             }
 
-            value.add(new CharsetWithWeight(charset, weight));
+            toAdd.add(new CharsetWithWeight(charset, weight));
         } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
-
-        return new AcceptCharset(value);
     }
 
     @Override
-    public byte[] ENCODE_HEADER(AcceptCharset header) {
-        return new byte[0];
+    public void ENCODE_HEADER(BaseEncoder.ResponseByteStream rbs, Buffer bfr, AcceptCharset h) {
+//        while (true) {
+//            pushString(rbs, "Accept-Charset:");
+//
+//            for (var v : h.value) {
+//                if (v.charset instanceof Charset.Star) rbs.push('*');
+//                else if (v.charset instanceof Charset.Token) pushString(rbs, ((Charset.Token) v.charset).type());
+//
+//                if (v.weight != null) {
+//                    rbs.push(';');
+//                    rbs.push('q');
+//                    rbs.push('=');
+//                    for (var wch : String.valueOf(v.weight).getBytes()) {
+//                        rbs.push(wch);
+//                    }
+//                }
+//                if (rbs.count() > 1024) throw new RuntimeException("Max header line exceeded");
+//                rbs.push(',');
+//            }
+//
+//            rbs.push('\r'); rbs.push('\n');
+//        }
     }
 
 }

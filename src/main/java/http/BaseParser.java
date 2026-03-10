@@ -1,23 +1,20 @@
 package http;
 
+import http.HttpParser.Header;
 import java.util.ArrayList;
 
 import static http.JumpTables.*;
-import static http.header.AuthenticationInfoHeader.AUTH_PARAMS;
-import static http.header.AuthorizationHeader.*;
+import static http.header.DTOs.*;
 
 public class Base {
 
-    static final int MAX_TOKEN_LENGTH = 4096;
+    static final int MAX_TOKEN_LENGTH = 1024;
 
     public static class Buffer {
         public final byte[] bytes = new byte[MAX_TOKEN_LENGTH];
         private int remains = 0;
         public void push(byte b) {
             bytes[remains++] = b;
-        }
-        public void push(char ch) {
-            bytes[remains++] = (byte) ch;
         }
         public int remains() { return remains; }
         public byte getLast(int i) { return bytes[remains()-i]; }
@@ -35,26 +32,18 @@ public class Base {
         byte advance(); // increment position and get current
     }
 
-    public sealed interface Method {
-        record Get() implements Method { }
-        record Head() implements Method { }
-        record Post() implements Method { }
-        record Put() implements Method { }
-        record Delete() implements Method { }
-        record Connect() implements Method { }
-        record Options() implements Method { }
-        record Trace() implements Method { }
-        record Patch() implements Method { }
-        record Token(String value) implements Method { }
+    public interface ResponseByteStream {
+        void push(char b);
+        void push(byte b);
     }
 
     public static byte CHAR(ByteStream bs, char ch) {
         byte b = bs.advance();
         if (b != ch) throw new RuntimeException("Expected " + ch);
-        return b;
+        return (byte) ch;
     }
 
-    public static boolean CHAR_CHECK(ByteStream bs, char ch) {
+    public static boolean IS_CHAR(ByteStream bs, char ch) {
         byte b = bs.advance(); bs.unadvance(b);
         return b == ch;
     }
@@ -64,7 +53,7 @@ public class Base {
         throw new RuntimeException("Expected DIGIT");
     }
 
-    public static boolean DIGIT_CHECK(ByteStream bs) {
+    public static boolean IS_DIGIT(ByteStream bs) {
         var b = bs.advance(); bs.unadvance(b);
         return (b >= '0' && b <= '9');
     }
@@ -74,7 +63,7 @@ public class Base {
         throw new RuntimeException("Expected ALPHA");
     }
 
-    public static boolean ALPHA_CHECK(ByteStream bs) {
+    public static boolean IS_ALPHA(ByteStream bs) {
         var b = bs.advance(); bs.unadvance(b);
         return IS_ALPHA_TABLE[b];
     }
@@ -84,80 +73,66 @@ public class Base {
         throw new RuntimeException("Expected ALPHA/DIGIT");
     }
 
-    public static boolean ALPHA_DIGIT_OPT(ByteStream bs) {
-        var b = bs.advance(); bs.unadvance(b);
-        return IS_ALPHA_OR_DIGIT_TABLE[b];
-    }
-
     public static byte HEXDIG(ByteStream bs) {
         byte b = bs.advance(); if (IS_HEXDIG_TABLE[b]) return b;
         throw new RuntimeException("Expected HEXDIG");
     }
 
-    public static boolean HEXDIG_CHECK(ByteStream bs) {
+    public static boolean IS_HEXDIG(ByteStream bs) {
         var b = bs.advance(); bs.unadvance(b);
         return IS_HEXDIG_TABLE[b];
     }
 
-    public static byte TCHAR(ByteStream bs) {
-        var b = bs.advance();
-        if (IS_TCHAR_TABLE[b]) return b;
-        throw new RuntimeException("Expected TCHAR");
-    }
-
-    public static boolean TCHAR_CHECK(ByteStream bs) {
+    public static boolean IS_TCHAR(ByteStream bs) {
         var b = bs.advance();
         bs.unadvance(b);
         return IS_TCHAR_TABLE[b];
     }
 
-    public static byte SCHEME(ByteStream bs) {
-        var b = bs.advance(); if (IS_SCHEME_TABLE[b]) return b;
-        throw new RuntimeException("Expected SCHEME");
-    }
-
-    public static byte SCHEME_OPT(ByteStream bs) {
-        var b = bs.advance();
-        if (IS_SCHEME_TABLE[b]) return b;
-        else {bs.unadvance(b); return -1;}
-    }
-
-    public static boolean QDTEXT_CHECK(ByteStream bs) {
+    public static boolean IS_QDTEXT(ByteStream bs) {
         var b = bs.advance(); bs.unadvance(b);
         return IS_QDTEXT_TABLE[b];
     }
 
-    public static boolean QUOTED_PAIR_CHECK(ByteStream bs) {
+    public static boolean IS_QUOTED_PAIR(ByteStream bs) {
         var b = bs.advance(); bs.unadvance(b);
         return IS_QUOTED_PAIR_TABLE[b];
     }
 
-    public static void TOKEN(ByteStream bs, Buffer bfr, boolean[] TOKEN_TABLE, int max) {
-        byte b;
-        var i = 0;
-        while(max == -1 || i < max ) {
+    public static void TOKEN(ByteStream bs, Buffer bfr, boolean[] IS_TOKEN_CHAR_TABLE) {
+        var b = bs.advance();
+        if (!IS_TOKEN_CHAR_TABLE[b]) throw new RuntimeException("Expected token");
+
+        do {
+            bfr.push(b);
             b = bs.advance();
-            if (TOKEN_TABLE[b]) {bfr.push(b); i++;}
-            else break;
-        }
+        } while (IS_TOKEN_CHAR_TABLE[b]);
     }
 
-    public static float WEIGHT_OPT(ByteStream bs, Buffer bfr) {
-        bfr.reset();
-        if(!OWS_SYMBOL_OWS_SKIP(bs, ';')) return -1;
-        if(!CHAR_CHECK(bs, 'q')) {bs.unadvance((byte) ';'); return -1; }
+    public static void TOKEN_TCHAR(ByteStream bs, Buffer bfr) {
+        TOKEN(bs, bfr, IS_TCHAR_TABLE);
+    }
 
-        bs.advance(); CHAR(bs, '=');
+    public static void TOKEN_ALPHA(ByteStream bs, Buffer bfr) {
+        TOKEN(bs, bfr, IS_ALPHA_TABLE);
+    }
 
-        if (!(CHAR_CHECK(bs, '0') || CHAR_CHECK(bs, '1'))) throw new RuntimeException("Expected 0 or 1");
+    public static void TOKEN_ALPHA_OR_DIGIT(ByteStream bs, Buffer bfr) {
+        TOKEN(bs, bfr, IS_ALPHA_OR_DIGIT_TABLE);
+    }
+
+    public static float WEIGHT(ByteStream bs, Buffer bfr) {
+        CHAR(bs, 'q'); CHAR(bs, '=');
+
+        if (!(IS_CHAR(bs, '0') || IS_CHAR(bs, '1'))) throw new RuntimeException("Expected 0 or 1");
         var firstSymbol = bs.advance();
 
-        if (!CHAR_CHECK(bs, '.')) return firstSymbol == '0' ? 0 : 1;
+        if (!IS_CHAR(bs, '.')) return firstSymbol == '0' ? 0 : 1;
 
         if (firstSymbol == '1')
-            for (var i = 0; (i < 3) && CHAR_CHECK(bs, '0'); i++) bfr.push(bs.advance());
+            for (var i = 0; (i < 3) && IS_CHAR(bs, '0'); i++) bfr.push(bs.advance());
         else
-            for (var i = 0; (i < 3) && DIGIT_CHECK(bs); i++) bfr.push(bs.advance());
+            for (var i = 0; (i < 3) && IS_DIGIT(bs); i++) bfr.push(bs.advance());
 
         var value = (float) bfr.bytes[0] - '0';
         var exp = 10;
@@ -171,10 +146,10 @@ public class Base {
 
     public static void QUOTED_STRING(ByteStream bs, Buffer bfr) {
         CHAR(bs, '"');
-        while (QDTEXT_CHECK(bs) || CHAR_CHECK(bs, '\\')) {
-            if (CHAR_CHECK(bs, '\\')) {
+        while (IS_QDTEXT(bs) || IS_CHAR(bs, '\\')) {
+            if (IS_CHAR(bs, '\\')) {
                 bfr.push(bs.advance());
-                if (!QUOTED_PAIR_CHECK(bs)) throw new RuntimeException("Expected quoted pair");
+                if (!IS_QUOTED_PAIR(bs)) throw new RuntimeException("Expected quoted pair");
             }
             bfr.push(bs.advance());
         }
@@ -187,7 +162,7 @@ public class Base {
 
     public static boolean OWS_SYMBOL_OWS_SKIP(ByteStream bs, char ch) {
         SKIP_OWS(bs);
-        var v = CHAR_CHECK(bs, ch);
+        var v = IS_CHAR(bs, ch);
         if (v) bs.advance();
         SKIP_OWS(bs);
         return v;
@@ -195,55 +170,35 @@ public class Base {
 
     public static ArrayList<String> TOKENS_COMMA_SEPARATED(ByteStream bs, Buffer bfr) {
         ArrayList<String> value = new ArrayList<>();
-        if (!TCHAR_CHECK(bs)) return value;
+        if (!IS_TCHAR(bs)) return value;
 
         do {
-            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
+            TOKEN_TCHAR(bs, bfr);
             value.add(bfr.toStringAndReset());
         } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
 
         return value;
     }
 
-    public static class Parameter {
-        public final String name;
-        public final String value;
-
-        public Parameter(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
-    }
-
-    public static class Parameters {
-        public final ArrayList<Parameter> value;
-
-        public Parameters(ArrayList<Parameter> value) {
-            this.value = value;
-        }
-    }
-
     public static int PARAMETER(ByteStream bs, Buffer bfr) {
         bfr.reset();
-        var nameEnd = 0;
-        if (OWS_SYMBOL_OWS_SKIP(bs, ';') && TCHAR_CHECK(bs)) {
-            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
-            CHAR(bs, '=');
-            nameEnd = bfr.remains();
+        var nameLength = 0;
 
-            if (CHAR_CHECK(bs, '"')) QUOTED_STRING(bs, bfr);
-            if (!TCHAR_CHECK(bs)) throw new RuntimeException("Expected token");
+        TOKEN_TCHAR(bs, bfr);
+        CHAR(bs, '=');
+        nameLength = bfr.remains();
 
-            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
-        }
-        return nameEnd;
+        if (IS_CHAR(bs, '"')) QUOTED_STRING(bs, bfr);
+        else TOKEN_TCHAR(bs, bfr);
+
+        return nameLength;
     }
 
     public static long ONE_OR_MORE_DIGIT_NUMBER(ByteStream bs) {
         var first = DIGIT(bs);
         var value = 0;
         value += (first - '0');
-        while (DIGIT_CHECK(bs)) value = (value * 10) + (bs.advance() - '0');
+        while (IS_DIGIT(bs)) value = (value * 10) + (bs.advance() - '0');
         return value;
     }
 
@@ -332,19 +287,17 @@ public class Base {
     }
 
     public static Authorization AUTHORIZATION(ByteStream bs, Buffer bfr) {
-        if(!TCHAR_CHECK(bs)) throw new RuntimeException("Expected auth-scheme");
-
-        TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
+        TOKEN_TCHAR(bs, bfr);
         var authSchema = bfr.toStringAndReset();
 
-        if (!CHAR_CHECK(bs, ' '))
+        if (!IS_CHAR(bs, ' '))
             return new Authorization(authSchema, null, null);
         bs.advance();
 
-        if (!(TCHAR_CHECK(bs) || TOKEN68_CHECK(bs))) throw new RuntimeException("Expected token68 or auth-params");
+        if (!(IS_TCHAR(bs) || TOKEN68_CHECK(bs))) throw new RuntimeException("Expected token68 or auth-params");
 
         var equalsCount = 0;
-        while (TCHAR_CHECK(bs) || TOKEN68_CHECK(bs)) {
+        while (IS_TCHAR(bs) || TOKEN68_CHECK(bs)) {
             var b = bs.advance();
             bfr.push(b);
             if (b == '=') equalsCount++;
@@ -360,45 +313,31 @@ public class Base {
         }
     }
 
-    public sealed interface AuthParam {
-        record Token(String name, String value) implements AuthParam {}
-    }
-
     public static ArrayList<AuthParam> AUTH_PARAMS(ByteStream bs, Buffer bfr) {
         var value = new ArrayList<AuthParam>();
 
-        while (TCHAR_CHECK(bs)) {
-            TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
+        if (!IS_TCHAR(bs)) return value;
+
+        do {
+            TOKEN_TCHAR(bs, bfr);
             var tokenName = bfr.toStringAndReset();
 
             if (!OWS_SYMBOL_OWS_SKIP(bs, '=')) throw new RuntimeException("Expected =");
 
-            if (CHAR_CHECK(bs, '"')) QUOTED_STRING(bs, bfr);
-            else if (TCHAR_CHECK(bs)) TOKEN(bs, bfr, IS_TCHAR_TABLE, -1);
-            else throw new RuntimeException("Expected TCHAR or \"");
+            if (IS_CHAR(bs, '"')) QUOTED_STRING(bs, bfr);
+            else TOKEN_TCHAR(bs, bfr);
 
             value.add(new AuthParam.Token(tokenName, bfr.toStringAndReset()));
+        } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
 
-            OWS_SYMBOL_OWS_SKIP(bs, ',');
-        }
         return value;
-    }
-
-    public sealed interface EntityTag {
-        public record Default(String value) implements EntityTag {}
-        public record Weak(String value) implements EntityTag {}
-    }
-
-    public sealed interface IfRangeType {
-        public record EntityTag(Base.EntityTag value) implements IfRangeType, Base.EntityTag {}
-        public record Date(String value) implements IfRangeType {}
     }
 
     public static EntityTag ENTITY_TAG_OPT(ByteStream bs, Buffer bfr) {
         var weak = false;
-        if (CHAR_CHECK(bs, 'W')) {CHAR(bs, '/'); weak = true;}
+        if (IS_CHAR(bs, 'W')) {CHAR(bs, '/'); weak = true;}
 
-        if (!CHAR_CHECK(bs, '"')) {
+        if (!IS_CHAR(bs, '"')) {
             if (weak) throw new RuntimeException("Expected opaque-tag");
             else return null;
         } bs.advance();
@@ -412,13 +351,8 @@ public class Base {
         return weak ? new EntityTag.Weak(value) : new EntityTag.Default(value);
     }
 
-    public sealed interface MatchEntitiesTags {
-        public record All() implements MatchEntitiesTags {}
-        public record EntitiesTags(ArrayList<EntityTag> value) implements MatchEntitiesTags {}
-    }
-
     public static MatchEntitiesTags MATCH_ENTITIES_TAGS(ByteStream bs, Buffer bfr) {
-        if (CHAR_CHECK(bs, '*')) return new MatchEntitiesTags.All();
+        if (IS_CHAR(bs, '*')) return new MatchEntitiesTags.All();
 
         var value = new ArrayList<EntityTag>();
 
@@ -430,9 +364,49 @@ public class Base {
         return new MatchEntitiesTags.EntitiesTags(value);
     }
 
-    public sealed interface RangeUnit {
-        record Bytes() implements RangeUnit { }
-        record Token(String value) implements RangeUnit { }
+    public static boolean CTEXT_CHECK(ByteStream bs) {
+        var b = bs.advance(); bs.unadvance(b);
+        return IS_CTEXT_TABLE[b];
+    }
+
+    public static ArrayList<Product> PRODUCTS(ByteStream bs, Buffer bfr) {
+        var value = new ArrayList<Product>();
+
+        do {
+            //product
+            TOKEN_TCHAR(bs, bfr);
+            var name = bfr.toStringAndReset();
+
+            String version = null;
+            if (IS_CHAR(bs, '/')) {
+                bs.advance();
+                TOKEN_TCHAR(bs, bfr);
+                version = bfr.toStringAndReset();
+            }
+            //comment
+
+            String comment = null;
+            if (IS_CHAR(bs, ' ')) {
+                bs.advance();
+                if (IS_CHAR(bs, '(')) {
+                    bs.advance();
+                    while (CTEXT_CHECK(bs) || IS_CHAR(bs, '\\')) {
+                        if (CTEXT_CHECK(bs)) bfr.push(bs.advance());
+                        else {
+                            bs.advance();
+                            if (!IS_QUOTED_PAIR(bs)) throw new RuntimeException("Expected quoted pair");
+                            bfr.push(bs.advance());
+                        }
+                    }
+                    comment = bfr.toStringAndReset();
+                    CHAR(bs, ')');
+                } else bs.unadvance((byte) ' ');
+            }
+
+            value.add(new Product(name, version, comment));
+        } while (IS_CHAR(bs, ' '));
+
+        return value;
     }
 
 }

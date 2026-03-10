@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -11,7 +11,7 @@ public class ContentLengthParserEncoder implements HeaderParser<ContentLength>, 
     }
 
     @Override
-    public byte[] ENCODE_HEADER(ContentLength header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, ContentLength header) {
         return new byte[0];
     }
 

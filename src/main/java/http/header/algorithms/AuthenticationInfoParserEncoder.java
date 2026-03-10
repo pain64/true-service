@@ -1,17 +1,20 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import java.util.ArrayList;
+
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class AuthenticationInfoParserEncoder implements HeaderParser<AuthenticationInfo>, HeaderEncoder<AuthenticationInfo>{
+public class AuthenticationInfoParserEncoder implements HeaderParserMultiline<AuthParam>, HeaderEncoder<AuthenticationInfo>{
     @Override
-    public AuthenticationInfo PARSE_HEADER(ByteStream bs, Buffer bfr) {
-        return new AuthenticationInfo(AUTH_PARAMS(bs, bfr));
+    public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<AuthParam> toAdd) {
+        toAdd.addAll(AUTH_PARAMS(bs, bfr));
     }
 
     @Override
-    public byte[] ENCODE_HEADER(AuthenticationInfo header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, AuthenticationInfo header) {
         return new byte[0];
     }
+
 }

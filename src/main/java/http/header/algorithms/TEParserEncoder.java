@@ -3,7 +3,7 @@ package http.header.algorithms;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -39,7 +39,7 @@ public class TEParserEncoder implements HeaderParser<TE>, HeaderEncoder<TE> {
     }
 
     @Override
-    public byte[] ENCODE_HEADER(TE header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, TE header) {
         return new byte[0];
     }
 }

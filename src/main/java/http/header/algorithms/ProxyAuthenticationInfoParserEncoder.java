@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -11,7 +11,7 @@ public class ProxyAuthenticationInfoParserEncoder implements HeaderParser<ProxyA
     }
 
     @Override
-    public byte[] ENCODE_HEADER(ProxyAuthenticationInfo header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, ProxyAuthenticationInfo header) {
         return new byte[0];
     }
 

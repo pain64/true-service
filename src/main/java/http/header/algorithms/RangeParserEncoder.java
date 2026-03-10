@@ -2,7 +2,7 @@ package http.header.algorithms;
 
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -35,7 +35,7 @@ public class RangeParserEncoder implements HeaderParser<Range>, HeaderEncoder<Ra
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Range header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Range header) {
         return new byte[0];
     }
 }

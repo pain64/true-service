@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -11,7 +11,7 @@ public class DateParserEncoder implements HeaderParser<Date>, HeaderEncoder<Date
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Date header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Date header) {
         return new byte[0];
     }
 }

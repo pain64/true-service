@@ -4,10 +4,10 @@ import http.HttpParser.*;
 
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.header.DTOs.*;
 
-public class AcceptLanguageParserEncoder implements HeaderParser<AcceptLanguage>, HeaderEncoder<AcceptLanguage>  {
+public class AcceptLanguageParserEncoder implements HeaderParserMultiline<LanguageRangeWithWeight>, HeaderEncoder<AcceptLanguage>  {
 
     public static LanguageRange LANGUAGE_RANGE(ByteStream bs, Buffer bfr) {
         if (IS_CHAR(bs, '*')) {bs.advance(); return new LanguageRange.Star();}
@@ -34,10 +34,8 @@ public class AcceptLanguageParserEncoder implements HeaderParser<AcceptLanguage>
     }
 
     @Override
-    public AcceptLanguage PARSE_HEADER(ByteStream bs, Buffer bfr) {
-        var value = new ArrayList<LanguageRangeWithWeight>();
-
-        if (!(IS_CHAR(bs, '*') || IS_ALPHA(bs))) return new AcceptLanguage(value);
+    public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<LanguageRangeWithWeight> toAdd) {
+        if (!(IS_CHAR(bs, '*') || IS_ALPHA(bs))) return;
 
         do {
             var languageRange = LANGUAGE_RANGE(bs, bfr);
@@ -49,14 +47,12 @@ public class AcceptLanguageParserEncoder implements HeaderParser<AcceptLanguage>
                 weight = WEIGHT(bs, bfr);
             }
 
-            value.add(new LanguageRangeWithWeight(languageRange, weight));
+            toAdd.add(new LanguageRangeWithWeight(languageRange, weight));
         } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
-
-        return new AcceptLanguage(value);
     }
 
     @Override
-    public byte[] ENCODE_HEADER(AcceptLanguage header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, AcceptLanguage header) {
         return new byte[0];
     }
 

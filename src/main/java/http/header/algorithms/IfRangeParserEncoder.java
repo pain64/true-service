@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -13,7 +13,7 @@ public class IfRangeParserEncoder implements HeaderParser<IfRange>, HeaderEncode
     }
 
     @Override
-    public byte[] ENCODE_HEADER(IfRange header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, IfRange header) {
         return new byte[0];
     }
 

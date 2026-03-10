@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -11,7 +11,7 @@ public class MaxForwardsParserEncoder implements HeaderParser<MaxForwards>, Head
     }
 
     @Override
-    public byte[] ENCODE_HEADER(MaxForwards header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, MaxForwards header) {
         return new byte[0];
     }
 

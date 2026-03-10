@@ -2,23 +2,20 @@ package http.header.algorithms;
 
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class AllowParserEncoder implements HeaderParser<Allow>, HeaderEncoder<Allow> {
-
+public class AllowParserEncoder implements HeaderParserMultiline<Method>, HeaderEncoder<Allow> {
     @Override
-    public Allow PARSE_HEADER(ByteStream bs, Buffer bfr) {
-        var value = new ArrayList<Method>();
-
-        if (!IS_TCHAR(bs)) return new Allow(value);
+    public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<Method> toAdd) {
+        if (!IS_TCHAR(bs)) return;
 
         do {
             TOKEN_TCHAR(bs, bfr);
             var token = bfr.toStringAndReset();
 
-            value.add(
+            toAdd.add(
                 switch (token) {
                     case "GET" -> new Method.Get();
                     case "HEAD" -> new Method.Head();
@@ -32,12 +29,11 @@ public class AllowParserEncoder implements HeaderParser<Allow>, HeaderEncoder<Al
                     default -> new Method.Token(token);
                 });
         } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
-
-        return new Allow(value);
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Allow header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Allow header) {
         return new byte[0];
     }
+
 }

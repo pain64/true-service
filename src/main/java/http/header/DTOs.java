@@ -1,7 +1,5 @@
 package http.header;
 
-import http.Base;
-
 import java.util.ArrayList;
 
 import static http.HttpParser.*;
@@ -13,13 +11,19 @@ public class DTOs {
         record TokenToken(String type, String subtype) implements MediaRangeType { }
     }
 
-    public class MediaRange extends HeaderLine {
+    public static class MediaRange {
         public final MediaRangeType mediaRange;
         public final ArrayList<Parameter> parameters;
         public final Float weight;
+
+        public MediaRange(MediaRangeType mediaRange, ArrayList<Parameter> parameters, Float weight) {
+            this.mediaRange = mediaRange;
+            this.parameters = parameters;
+            this.weight = weight;
+        }
     }
 
-    public static class Accept extends Header {
+    public static class Accept extends MultiLine<MediaRange> {
         public final ArrayList<MediaRange> value;
 
         public Accept(ArrayList<MediaRange> value) {
@@ -32,9 +36,17 @@ public class DTOs {
         record Token(String type) implements Charset { }
     }
 
-    public record CharsetWithWeight (Charset charset, Float weight) {}
+    public static class CharsetWithWeight {
+        public final Charset charset;
+        public final Float weight;
 
-    public static class AcceptCharset extends Header {
+        public CharsetWithWeight(Charset charset, Float weight) {
+            this.charset = charset;
+            this.weight = weight;
+        }
+    }
+
+    public static class AcceptCharset extends MultiLine<CharsetWithWeight> {
         public final ArrayList<CharsetWithWeight> value;
 
         public AcceptCharset(ArrayList<CharsetWithWeight> value) {
@@ -48,9 +60,17 @@ public class DTOs {
         record Token(String type) implements Encoding { }
     }
 
-    public record EncodingWithWeight (Encoding encoding, Float weight) {}
+    public static class EncodingWithWeight {
+        public final Encoding encoding;
+        public final Float weight;
 
-    public static class AcceptEncoding extends Header {
+        public EncodingWithWeight(Encoding encoding, Float weight) {
+            this.encoding = encoding;
+            this.weight = weight;
+        }
+    }
+
+    public static class AcceptEncoding extends MultiLine<EncodingWithWeight> {
         public final ArrayList<EncodingWithWeight> value;
 
         public AcceptEncoding(ArrayList<EncodingWithWeight> value) {
@@ -65,9 +85,17 @@ public class DTOs {
         record Range(String rangeStart, String rangeEnd) implements LanguageRange { }
     }
 
-    public record LanguageRangeWithWeight (LanguageRange range, Float weight) {}
+    public static class LanguageRangeWithWeight implements Line {
+        public final LanguageRange range;
+        public final Float weight;
 
-    public static class AcceptLanguage extends Header {
+        public LanguageRangeWithWeight(LanguageRange range, Float weight) {
+            this.range = range;
+            this.weight = weight;
+        }
+    }
+
+    public static class AcceptLanguage extends MultiLine<LanguageRangeWithWeight> {
         public final ArrayList<LanguageRangeWithWeight> value;
 
         public AcceptLanguage(ArrayList<LanguageRangeWithWeight> value) {
@@ -81,10 +109,11 @@ public class DTOs {
         record Token(String value) implements AcceptRangeType { }
     }
 
-    public static class AcceptRanges extends Header {
+    public static class AcceptRanges extends MultiLine<AcceptRangeType> {
         public final ArrayList<AcceptRangeType> value;
 
         public AcceptRanges(ArrayList<AcceptRangeType> value) {
+            if (value.isEmpty()) throw new RuntimeException("Expected range type");
             this.value = value;
         }
     }
@@ -102,7 +131,7 @@ public class DTOs {
         record Token(String value) implements Method { }
     }
 
-    public static class Allow extends Header {
+    public static class Allow extends MultiLine<Method> {
         public final ArrayList<Method> value;
 
         public Allow(ArrayList<Method> value) {
@@ -114,7 +143,7 @@ public class DTOs {
         record Token(String name, String value) implements AuthParam {}
     }
 
-    public static class AuthenticationInfo extends Header {
+    public static class AuthenticationInfo extends MultiLine<AuthParam> {
         public final ArrayList<AuthParam> value;
 
         public AuthenticationInfo(ArrayList<AuthParam> value) {
@@ -134,10 +163,18 @@ public class DTOs {
         }
     }
 
-    public static class Connection extends Header {
-        public final ArrayList<String> value;
+    public static class ConnectionOption {
+        public final String value;
 
-        public Connection(ArrayList<String> value) {
+        public ConnectionOption(String value) {
+            this.value = value;
+        }
+    }
+
+    public static class Connection extends MultiLine<ConnectionOption> {
+        public final ArrayList<ConnectionOption> value;
+
+        public Connection(ArrayList<ConnectionOption> value) {
             this.value = value;
         }
     }

@@ -1,15 +1,13 @@
 package http.header.algorithms;
 
-import http.HttpParser.HeaderEncoder;
-import http.HttpParser.HeaderParser;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
+import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class AcceptParserEncoder implements HeaderParser<Accept>, HeaderEncoder<Accept> {
+public class AcceptParserEncoder implements HeaderParserMultiline<MediaRange>, HeaderEncoder<Accept> {
     public static MediaRangeType MEDIA_RANGE_TYPE(ByteStream bs, Buffer bfr) {
         if (IS_CHAR(bs, '*')) {
             CHAR(bs, '*'); CHAR(bs, '/'); CHAR(bs, '*');
@@ -32,10 +30,8 @@ public class AcceptParserEncoder implements HeaderParser<Accept>, HeaderEncoder<
     }
 
     @Override
-    public Accept PARSE_HEADER(ByteStream bs, Buffer bfr) {
-        var value = new ArrayList<MediaRange>();
-
-        if (!IS_TCHAR(bs)) return new Accept(value);
+    public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<MediaRange> toAdd) {
+        if (!IS_TCHAR(bs)) return;
 
         do {
             var mediaRangeType = MEDIA_RANGE_TYPE(bs, bfr);
@@ -53,14 +49,13 @@ public class AcceptParserEncoder implements HeaderParser<Accept>, HeaderEncoder<
                 }
             }
 
-            value.add(new MediaRange(mediaRangeType, parameters, weight));
+            toAdd.add(new MediaRange(mediaRangeType, parameters, weight));
         } while (OWS_SYMBOL_OWS_SKIP(bs, ','));
-
-        return new Accept(value);
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Accept header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Accept header) {
         return new byte[0];
     }
+
 }

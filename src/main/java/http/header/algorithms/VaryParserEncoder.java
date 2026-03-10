@@ -2,7 +2,7 @@ package http.header.algorithms;
 
 import java.util.ArrayList;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
@@ -27,7 +27,7 @@ public class VaryParserEncoder implements HeaderParser<Vary>, HeaderEncoder<Vary
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Vary header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Vary header) {
         return new byte[0];
     }
 }

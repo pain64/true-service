@@ -1,6 +1,6 @@
 package http.header.algorithms;
 
-import static http.Base.*;
+import static http.BaseParser.*;
 import static http.header.DTOs.*;
 import static http.HttpParser.*;
 
@@ -11,7 +11,7 @@ public class AuthorizationParserEncoder implements HeaderParser<Authorization>, 
     }
 
     @Override
-    public byte[] ENCODE_HEADER(Authorization header) {
+    public void ENCODE_HEADER(ResponseByteStream rbs, Authorization header) {
         return new byte[0];
     }
 }
