@@ -28,7 +28,8 @@ public class Dsl {
 
     //  @Get("/") Union2<
     //      @Sc400 @TextPlain String,
-    //      List2<
+    //      List3<
+    //          MyOutputHeader,
     //          @FormMultipart @Name("name") String ,
     //          @FormMultipart @Name("age")  Integer
     //      >
@@ -491,8 +492,40 @@ public class Dsl {
             );
         }
 
+        // also HeadersTail
+        // public <
+        //     HT extends HeadersTail,
+        //     BT extends BodyTail>
+        // List3<
+        //     SuperHeader, HT, @ApplicationJson BT
+        // >
+        // after__200__ApplicationJson(HT headers, BT body) {
+        //     return List3.of(new SuperHeader(...), headers, body);
+        // }
+        //
+        // public <BT extends BodyTail> after200(@ApplicationJson BT nextResult) {
+        //     return new Ok(nextResult);
+        // }
+        // public <BT extends BodyTail> List2<
+        //     @ApplicationJson @Name("userId") Long,
+        //     @ApplicationJson BT
+        // > after__200__ApplicationJson(@ApplicationJson BT nextResult) {
+        //
+        // }
+        //
+        // public T after__200__FormMultipart(@FormMultipart T nextResult) {
+        //     // => ->
+        //     // overload resolution ???
+        // }
+
+//        public @Sc200 Fail<Void> afterException1(
+//            Exception nextException
+//        ) {
+//            return new Fail<>(nextException.getMessage());
+//        }
+
         // route by: Exception class
-        public HttpResponse<Sc200, HNil, ApplicationJson<Fail<Void>>> onException1(
+        public HttpResponse<Sc200, HNil, ApplicationJson<Fail<Void>>> afterException1(
             Exception nextException
         ) {
             return new HttpResponse<>(

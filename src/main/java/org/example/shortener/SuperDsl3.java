@@ -113,8 +113,22 @@ public class SuperDsl3 {
         // class HttpServletExchange {
         //     HttpSession provideHttpSession() {}
         // }
-
-//        new TrueWebApi()
+//
+//    1.  Сделать класс TrueWebServerApi и его базовый DSL
+//    2.  Сделать обвязку в виде процессора аннотаций и плагина, который ставит аннотацию
+//    3.  Научиться парсить в процессоре аннотаций new TrueWebServerApi и
+//        .http, .with, H.
+//    4.  Начать парсить Api классы в internal формат
+//    5.  Решить вопрос с инкрементальной компиляцией
+//    6.  Изучить OpenApi спецификацию, понять подходит ли она нам
+//    7.  Закончить парсинг в internal формат
+//    8.  Дампить internal формат на диск
+//    9.  Сгенерировать ts клиент по internal формату (на ts)
+//    10. Сгенерировать бинды к http серверу, используя internal формат
+//
+//
+//
+//        new TrueWebServerApi()
 //            .webSocket(handler)
 //            .serverSentEvents(handler)
 //            .http(new FileDownloadApi("/tmp/files"))
@@ -124,6 +138,13 @@ public class SuperDsl3 {
 //                    Env.getString("BOT_BACKEND_SECRET"),
 //                    Env.getInt("CODE_LIFETIME_SECONDS")
 //                )
+//            )
+//            .with(
+//                List.of(
+//                    new Middleware1(),
+//                    new Middleware2()
+//                ), H
+//                    .http(new AdminApi(ds))
 //            )
 //            .with(
 //                new SiteAuthMiddleware(), H
@@ -139,7 +160,14 @@ public class SuperDsl3 {
 //                ), H
 //                    .http(new BotApi(imagesService))
 //            );
-
+        // creates route function ??? endpoint tree -> header tree -> body handler (ByteInput, ByteOutput)
+        // api.routes() -> http route, sse route, ws route ???
+//  -- client API
+//  var serviceA = TrueWebClientApi
+//      .withUri("https://myservice.com:1911")
+//      .withSocketFactory(...) ???
+//      .withIoEngine(...) ???
+//      .instantiate(ServiceA.class)
 
         // ContextReader
         new HttpApi<HttpServletExchange>()
