@@ -1,18 +1,20 @@
 package http.header.algorithms;
 
-import static http.BaseParser.*;
+import http.BaseEncoder;
+import http.BaseEncoder.ResponseByteStream;
+
+import static http.BaseDecoder.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class MaxForwardsParserEncoder implements HeaderParser<MaxForwards>, HeaderEncoder<MaxForwards> {
+public class MaxForwardsParserEncoder implements HeaderParser<MaxForwards> {
     @Override
-    public MaxForwards PARSE_HEADER(ByteStream bs, Buffer bfr) {
+    public MaxForwards decode(ByteStream bs, Buffer bfr) {
         return new MaxForwards(ONE_OR_MORE_DIGIT_NUMBER(bs));
     }
 
     @Override
-    public void ENCODE_HEADER(ResponseByteStream rbs, MaxForwards header) {
-        return new byte[0];
+    public void encode(ResponseByteStream rbs, MaxForwards header) {
+        BaseEncoder.NUMBER(rbs, header.value);
     }
-
 }

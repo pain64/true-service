@@ -1,39 +1,28 @@
 package http.header.algorithms;
 
+
+import http.BaseEncoder;
+import http.BaseEncoder.ResponseByteStream;
+
 import java.util.ArrayList;
 
-import static http.BaseParser.*;
 import static http.HttpParser.*;
+import static http.BaseDecoder.*;
 import static http.header.DTOs.*;
 
-public class AllowParserEncoder implements HeaderParserMultiline<Method>, HeaderEncoder<Allow> {
+public class AllowParserEncoder implements ValueListHeaderParser<Method, Allow> {
     @Override
-    public void PARSE_HEADER(ByteStream bs, Buffer bfr, ArrayList<Method> toAdd) {
-        if (!IS_TCHAR(bs)) return;
-
-        do {
-            TOKEN_TCHAR(bs, bfr);
-            var token = bfr.toStringAndReset();
-
-            toAdd.add(
-                switch (token) {
-                    case "GET" -> new Method.Get();
-                    case "HEAD" -> new Method.Head();
-                    case "POST" -> new Method.Post();
-                    case "PUT" -> new Method.Put();
-                    case "DELETE" -> new Method.Delete();
-                    case "CONNECT" -> new Method.Connect();
-                    case "OPTIONS" -> new Method.Options();
-                    case "TRACE" -> new Method.Trace();
-                    case "PATCH" -> new Method.Patch();
-                    default -> new Method.Token(token);
-                });
-        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
+    public Allow create(ArrayList<Method> valueArray) {
+        return new Allow(valueArray);
     }
 
     @Override
-    public void ENCODE_HEADER(ResponseByteStream rbs, Allow header) {
-        return new byte[0];
+    public void decode(ByteStream bs, Buffer bfr, ArrayList<Method> dest) {
+        METHODS(bs, bfr, dest);
     }
 
+    @Override
+    public void encode(ResponseByteStream rbs, Allow header) {
+        BaseEncoder.METHODS(rbs, header.value);
+    }
 }

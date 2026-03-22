@@ -1,29 +1,63 @@
 package http;
 
-import http.BaseParser.Buffer;
-import http.BaseParser.ByteStream;
+import http.BaseDecoder.Buffer;
+import http.BaseDecoder.ByteStream;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static http.BaseParser.*;
+import static http.BaseDecoder.*;
 import static http.JumpTables.IS_SCHEME_TABLE;
 import static http.JumpTables.IS_UNRESERVED_OR_SUBDELIMS_TABLE;
 
 // UriParser
 public class URIParser {
-
     public sealed interface Host {
-        record RegName(String value) implements Host {}
-        record IpV4Address(String value) implements Host {}
-        record IpV6Address(String value) implements Host {}
+        String getValue();
+        final class RegName implements Host {
+            private final byte[] value;
+
+            public RegName(byte[] value) {
+                this.value = value;
+            }
+
+            @Override
+            public String getValue() {
+                return new String(value, StandardCharsets.UTF_8);
+            }
+        }
+        final class IpV4Address implements Host {
+            private final byte[] value;
+
+            public IpV4Address(byte[] value) {
+                this.value = value;
+            }
+
+            @Override
+            public String getValue() {
+                return new String(value, StandardCharsets.UTF_8);
+            }
+        }
+        final class IpV6Address implements Host {
+            private final byte[] value;
+
+            public IpV6Address(byte[] value) {
+                this.value = value;
+            }
+
+            @Override
+            public String getValue() {
+                return new String(value, StandardCharsets.UTF_8);
+            }
+        }
     }
 
     public static class Authority {
-        public final String userInfo;
+        public final byte[] userInfo;
         public final Host host;
         public final int port;
 
-        public Authority(String userInfo, Host host, int port) {
+        public Authority(byte[] userInfo, Host host, int port) {
             this.userInfo = userInfo;
             this.host = host;
             this.port = port;
@@ -36,10 +70,10 @@ public class URIParser {
 
     public static class PartialURI {
         public final Authority authority;
-        public final String path;
+        public final byte[] path;
         public final ArrayList<Q> query;
 
-        public PartialURI(Authority authority, String path, ArrayList<Q> query) {
+        public PartialURI(Authority authority, byte[] path, ArrayList<Q> query) {
             this.authority = authority;
             this.path = path;
             this.query = query;
@@ -47,10 +81,10 @@ public class URIParser {
     }
 
     public static class AbsoluteURI {
-        public final String scheme;
+        public final byte[] scheme;
         public final PartialURI relativePart;
 
-        public AbsoluteURI(String scheme, PartialURI relativePart) {
+        public AbsoluteURI(byte[] scheme, PartialURI relativePart) {
             this.scheme = scheme;
             this.relativePart = relativePart;
         }
@@ -80,7 +114,7 @@ public class URIParser {
     }
 
     public static String IP_V6ADDRESS(ByteStream bs, Buffer bfr) {
-
+        return "";
     }
 
     public static String IP_LITERAL(ByteStream bs, Buffer bfr) {
@@ -157,11 +191,12 @@ public class URIParser {
     }
 
     public static String AUTHORITY(ByteStream bs, Buffer bfr) {
-
+        return "";
     }
 
     public static String ABSOLUTE_URI(ByteStream bs, Buffer bfr) {
         var scheme = SCHEME(bs, bfr);
         CHAR(bs, ':');
+        return "";
     }
 }

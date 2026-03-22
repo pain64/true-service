@@ -1,14 +1,40 @@
 package http.header;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static http.HttpParser.*;
 
 public class DTOs {
     public sealed interface MediaRangeType {
-        record StarStar() implements MediaRangeType { }
-        record TokenStar(String type) implements MediaRangeType { }
-        record TokenToken(String type, String subtype) implements MediaRangeType { }
+        final class StarStar implements MediaRangeType { }
+        final class TokenStar implements MediaRangeType {
+            public final String type;
+
+            public TokenStar(String type) {
+                this.type = type;
+            }
+        }
+        final class TokenToken implements MediaRangeType {
+            public final String type;
+            public final String subtype;
+
+            public TokenToken(String type, String subtype) {
+                this.type = type;
+                this.subtype = subtype;
+            }
+        }
+    }
+
+    public static class Weight {
+        public final Float weight;
+
+        public Weight(Float weight) {
+            if (weight != null) {
+                if (!(weight >= 0 && weight <= 1)) throw new RuntimeException("WEIGHT is expected to be in [0,1]");
+            }
+            this.weight = weight;
+        }
     }
 
     public static class MediaRange {
@@ -23,7 +49,7 @@ public class DTOs {
         }
     }
 
-    public static class Accept extends MultiLine<MediaRange> {
+    public static class Accept implements ValueListHeader<MediaRange> {
         public final ArrayList<MediaRange> value;
 
         public Accept(ArrayList<MediaRange> value) {
@@ -32,8 +58,14 @@ public class DTOs {
     }
 
     public sealed interface Charset {
-        record Star() implements Charset { }
-        record Token(String type) implements Charset { }
+        final class Star implements Charset { }
+        final class Token implements Charset {
+            public final String token;
+
+            public Token(String token) {
+                this.token = token;
+            }
+        }
     }
 
     public static class CharsetWithWeight {
@@ -46,7 +78,7 @@ public class DTOs {
         }
     }
 
-    public static class AcceptCharset extends MultiLine<CharsetWithWeight> {
+    public static class AcceptCharset implements ValueListHeader<CharsetWithWeight> {
         public final ArrayList<CharsetWithWeight> value;
 
         public AcceptCharset(ArrayList<CharsetWithWeight> value) {
@@ -55,9 +87,15 @@ public class DTOs {
     }
 
     public sealed interface Encoding {
-        record Star() implements Encoding { }
-        record Identity() implements Encoding { }
-        record Token(String type) implements Encoding { }
+        final class Star implements Encoding { }
+        final class Identity implements Encoding { }
+        final class Token implements Encoding {
+            public final String type;
+
+            public Token(String type) {
+                this.type = type;
+            }
+        }
     }
 
     public static class EncodingWithWeight {
@@ -70,7 +108,7 @@ public class DTOs {
         }
     }
 
-    public static class AcceptEncoding extends MultiLine<EncodingWithWeight> {
+    public static class AcceptEncoding implements ValueListHeader<EncodingWithWeight> {
         public final ArrayList<EncodingWithWeight> value;
 
         public AcceptEncoding(ArrayList<EncodingWithWeight> value) {
@@ -80,12 +118,26 @@ public class DTOs {
 
 
     public sealed interface LanguageRange {
-        record Star() implements LanguageRange { }
-        record One(String value) implements LanguageRange { }
-        record Range(String rangeStart, String rangeEnd) implements LanguageRange { }
+        final class Star implements LanguageRange { }
+        final class One implements LanguageRange {
+            public final String value;
+
+            public One(String value) {
+                this.value = value;
+            }
+        }
+        final class Range implements LanguageRange {
+            public final String rangeStart;
+            public final String rangeEnd;
+
+            public Range(String rangeStart, String rangeEnd) {
+                this.rangeStart = rangeStart;
+                this.rangeEnd = rangeEnd;
+            }
+        }
     }
 
-    public static class LanguageRangeWithWeight implements Line {
+    public static class LanguageRangeWithWeight {
         public final LanguageRange range;
         public final Float weight;
 
@@ -95,7 +147,7 @@ public class DTOs {
         }
     }
 
-    public static class AcceptLanguage extends MultiLine<LanguageRangeWithWeight> {
+    public static class AcceptLanguage implements ValueListHeader<LanguageRangeWithWeight> {
         public final ArrayList<LanguageRangeWithWeight> value;
 
         public AcceptLanguage(ArrayList<LanguageRangeWithWeight> value) {
@@ -103,35 +155,28 @@ public class DTOs {
         }
     }
 
-    public sealed interface AcceptRangeType {
-        record None() implements AcceptRangeType { }
-        record Bytes() implements AcceptRangeType { }
-        record Token(String value) implements AcceptRangeType { }
-    }
+    public static class AcceptRanges implements Header { }
 
-    public static class AcceptRanges extends MultiLine<AcceptRangeType> {
-        public final ArrayList<AcceptRangeType> value;
+    public sealed interface Method {
+        final class Get implements Method { }
+        final class Head implements Method { }
+        final class Post implements Method { }
+        final class Put implements Method { }
+        final class Delete implements Method { }
+        final class Connect implements Method { }
+        final class Options implements Method { }
+        final class Trace implements Method { }
+        final class Patch implements Method { }
+        final class Token implements Method {
+            public final String value;
 
-        public AcceptRanges(ArrayList<AcceptRangeType> value) {
-            if (value.isEmpty()) throw new RuntimeException("Expected range type");
-            this.value = value;
+            public Token(String value) {
+                this.value = value;
+            }
         }
     }
 
-    public sealed interface Method {
-        record Get() implements Method { }
-        record Head() implements Method { }
-        record Post() implements Method { }
-        record Put() implements Method { }
-        record Delete() implements Method { }
-        record Connect() implements Method { }
-        record Options() implements Method { }
-        record Trace() implements Method { }
-        record Patch() implements Method { }
-        record Token(String value) implements Method { }
-    }
-
-    public static class Allow extends MultiLine<Method> {
+    public static class Allow implements ValueListHeader<Method> {
         public final ArrayList<Method> value;
 
         public Allow(ArrayList<Method> value) {
@@ -139,11 +184,17 @@ public class DTOs {
         }
     }
 
-    public sealed interface AuthParam {
-        record Token(String name, String value) implements AuthParam {}
+    public static class AuthParam {
+        public final String name;
+        public final String value;
+
+        public AuthParam(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
     }
 
-    public static class AuthenticationInfo extends MultiLine<AuthParam> {
+    public static class AuthenticationInfo implements ValueListHeader<AuthParam> {
         public final ArrayList<AuthParam> value;
 
         public AuthenticationInfo(ArrayList<AuthParam> value) {
@@ -151,35 +202,29 @@ public class DTOs {
         }
     }
 
-    public static class Authorization extends Header {
+    public static class Authorization implements Header {
         public final String authSchema;
         public final String token;
-        public final ArrayList<AuthParam> authPararms;
+        public final ArrayList<AuthParam> authParams;
 
-        public Authorization(String authSchema, String token, ArrayList<AuthParam> authPararms) {
+        public Authorization(String authSchema, String token, ArrayList<AuthParam> authParams) {
+            if (token != null && !authParams.isEmpty()) throw new RuntimeException("Expect token or authParams, not both.");
             this.authSchema = authSchema;
             this.token = token;
-            this.authPararms = authPararms;
+            this.authParams = authParams;
         }
     }
 
-    public static class ConnectionOption {
-        public final String value;
 
-        public ConnectionOption(String value) {
+    public static class Connection implements ValueListHeader<String> {
+        public final ArrayList<String> value;
+
+        public Connection(ArrayList<String> value) {
             this.value = value;
         }
     }
 
-    public static class Connection extends MultiLine<ConnectionOption> {
-        public final ArrayList<ConnectionOption> value;
-
-        public Connection(ArrayList<ConnectionOption> value) {
-            this.value = value;
-        }
-    }
-
-    public static class ContentEncoding extends Header {
+    public static class ContentEncoding implements ValueListHeader<String> {
         public final ArrayList<String> value;
 
         public ContentEncoding(ArrayList<String> value) {
@@ -187,7 +232,7 @@ public class DTOs {
         }
     }
 
-    public static class ContentLength extends Header {
+    public static class ContentLength implements Header {
         public final long value;
 
         public ContentLength(long value) {
@@ -196,8 +241,14 @@ public class DTOs {
     }
 
     public sealed interface RangeUnit {
-        record Bytes() implements RangeUnit { }
-        record Token(String value) implements RangeUnit { }
+        final class Bytes implements RangeUnit { }
+        final class Token implements RangeUnit {
+            public final String value;
+
+            public Token(String value) {
+                this.value = value;
+            }
+        }
     }
 
     public static class Product {
@@ -213,12 +264,26 @@ public class DTOs {
     }
 
     public sealed interface ContentRangeType {
-        record Star() implements ContentRangeType { }
-        record Value(long value) implements ContentRangeType { }
-        record Interval(long from, long to) implements ContentRangeType { }
+        final class Star implements ContentRangeType { }
+        final class Value implements ContentRangeType {
+            public final long value;
+
+            public Value(long value) {
+                this.value = value;
+            }
+        }
+        final class Interval implements ContentRangeType {
+            public final long from;
+            public final long to;
+
+            public Interval(long from, long to) {
+                this.from = from;
+                this.to = to;
+            }
+        }
     }
 
-    public static class ContentRange extends Header {
+    public static class ContentRange implements Header {
         public final RangeUnit rangeUnit;
         public final ContentRangeType range;
         public final ContentRangeType size;
@@ -240,7 +305,7 @@ public class DTOs {
         }
     }
 
-    public static class ContentType extends Header {
+    public static class ContentType implements Header {
         public final String type;
         public final String subtype;
         public final ArrayList<Parameter> value;
@@ -252,25 +317,49 @@ public class DTOs {
         }
     }
 
-    public static class Date extends Header {
-        public final String value;
+    public static class Date implements Header {
+        public final LocalDateTime value;
 
-        public Date(String value) {
+        public Date(LocalDateTime value) {
             this.value = value;
         }
     }
 
     public sealed interface EntityTag {
-        public record Default(String value) implements EntityTag {}
-        public record Weak(String value) implements EntityTag {}
+        final class Default implements EntityTag {
+            public final String value;
+
+            public Default(String value) {
+                this.value = value;
+            }
+        }
+        final class Weak implements EntityTag {
+            public final String value;
+
+            public Weak(String value) {
+                this.value = value;
+            }
+        }
     }
 
     public sealed interface IfRangeType {
-        public record EntityTag(DTOs.EntityTag value) implements IfRangeType {}
-        public record Date(String value) implements IfRangeType {}
+        final class EntityTag implements IfRangeType {
+            public final DTOs.EntityTag value;
+
+            public EntityTag(DTOs.EntityTag value) {
+                this.value = value;
+            }
+        }
+        final class Date implements IfRangeType {
+            public final LocalDateTime value;
+
+            public Date(LocalDateTime value) {
+                this.value = value;
+            }
+        }
     }
 
-    public static class ETag extends Header {
+    public static class ETag implements Header {
         public final EntityTag value;
 
         public ETag(EntityTag value) {
@@ -279,11 +368,17 @@ public class DTOs {
     }
 
     public sealed interface MatchEntitiesTags {
-        public record All() implements MatchEntitiesTags {}
-        public record EntitiesTags(ArrayList<EntityTag> value) implements MatchEntitiesTags {}
+        final class All implements MatchEntitiesTags {}
+        final class EntitiesTags implements MatchEntitiesTags {
+            public final ArrayList<EntityTag> value;
+
+            public EntitiesTags(ArrayList<EntityTag> value) {
+                this.value = value;
+            }
+        }
     }
 
-    public static class IfMatch extends Header {
+    public static class IfMatch implements Header {
         public final MatchEntitiesTags value;
 
         public IfMatch(MatchEntitiesTags value) {
@@ -303,7 +398,7 @@ public class DTOs {
         }
     }
 
-    public static class Expect extends Header {
+    public static class Expect implements ValueListHeader<Expectation> {
         public final ArrayList<Expectation> value;
 
         public Expect(ArrayList<Expectation> value) {
@@ -313,20 +408,19 @@ public class DTOs {
 
     public static class IfModifiedSince extends Date {
 
-        public IfModifiedSince(String date) {
+        public IfModifiedSince(LocalDateTime date) {
             super(date);
         }
     }
 
-    public static class IfNoneMatch extends Header {
-        public final MatchEntitiesTags value;
+    public static class IfNoneMatch extends IfMatch {
 
         public IfNoneMatch(MatchEntitiesTags value) {
-            this.value = value;
+            super(value);
         }
     }
 
-    public static class IfRange extends Header {
+    public static class IfRange implements Header {
         public final IfRangeType value;
 
         public IfRange(IfRangeType value) {
@@ -336,19 +430,19 @@ public class DTOs {
 
     public static class IfUnmodifiedSince extends Date {
 
-        public IfUnmodifiedSince(String date) {
+        public IfUnmodifiedSince(LocalDateTime date) {
             super(date);
         }
     }
 
     public static class LastModified extends Date {
 
-        public LastModified(String date) {
+        public LastModified(LocalDateTime date) {
             super(date);
         }
     }
 
-    public static class MaxForwards extends Header {
+    public static class MaxForwards implements Header {
         public final long value;
 
         public MaxForwards(long value) {
@@ -356,19 +450,13 @@ public class DTOs {
         }
     }
 
-    public static class Challenge {
-        public final String authSchema;
-        public final String token;
-        public final ArrayList<AuthParam> authPararms;
-
+    public static class Challenge extends Authorization {
         public Challenge(String authSchema, String token, ArrayList<AuthParam> authPararms) {
-            this.authSchema = authSchema;
-            this.token = token;
-            this.authPararms = authPararms;
+            super(authSchema, token, authPararms);
         }
     }
 
-    public static class Authenticate extends Header {
+    public static class Authenticate implements ValueListHeader<Challenge> {
         public final ArrayList<Challenge> value;
 
         public Authenticate(ArrayList<Challenge> value) {
@@ -392,17 +480,37 @@ public class DTOs {
 
     public static class ProxyAuthorization extends Authorization {
         public ProxyAuthorization(Authorization auth) {
-            super(auth.authSchema, auth.token, auth.authPararms);
+            super(auth.authSchema, auth.token, auth.authParams);
         }
     }
 
     public sealed interface RangeSpec  {
-        record Start(long value) implements RangeSpec {}
-        record Interval(long from, long to) implements RangeSpec {}
-        record Suffix(long value) implements RangeSpec {}
+        final class Start implements RangeSpec {
+            public final long value;
+
+            public Start(long value) {
+                this.value = value;
+            }
+        }
+        final class Interval implements RangeSpec {
+            public final long from;
+            public final long to;
+
+            public Interval(long from, long l) {
+                this.from = from;
+                to = l;
+            }
+        }
+        final class Suffix implements RangeSpec {
+            public final long value;
+
+            public Suffix(long value) {
+                this.value = value;
+            }
+        }
     }
 
-    public static class Range extends Header {
+    public static class Range implements Header {
         public final RangeUnit rangeUnit;
         public final ArrayList<RangeSpec> value;
 
@@ -413,10 +521,21 @@ public class DTOs {
     }
 
     public sealed interface RetryAfterType {
-        record HttpDate(String value) implements RetryAfterType{}
-        record DelaySeconds(long value) implements RetryAfterType {}
+        final class HttpDate extends Date implements RetryAfterType{
+
+            public HttpDate(LocalDateTime value) {
+                super(value);
+            }
+        }
+        final class DelaySeconds implements RetryAfterType {
+            public final long value;
+
+            public DelaySeconds(long value) {
+                this.value = value;
+            }
+        }
     }
-    public static class RetryAfter extends Header {
+    public static class RetryAfter implements Header {
         public final RetryAfterType value;
 
         public RetryAfter(RetryAfterType value) {
@@ -424,7 +543,7 @@ public class DTOs {
         }
     }
 
-    public static class Server extends Header {
+    public static class Server implements ValueListHeader<Product> {
         public final ArrayList<Product> value;
 
         public Server(ArrayList<Product> value) {
@@ -433,10 +552,20 @@ public class DTOs {
     }
 
     public sealed interface TCoding {
-        record Trailers() implements TCoding {}
-        record Value(String transferCoding, ArrayList<Parameter> parameters, Float weight) implements TCoding {}
+        final class Trailers implements TCoding {}
+        final class Value implements TCoding {
+            public final String transferCoding;
+            public final ArrayList<Parameter> parameters;
+            public final Float weight;
+
+            public Value(String transferCoding, ArrayList<Parameter> parameters, Float weight) {
+                this.transferCoding = transferCoding;
+                this.parameters = parameters;
+                this.weight = weight;
+            }
+        }
     }
-    public static class TE extends Header {
+    public static class TE implements ValueListHeader<TCoding> {
         public final ArrayList<TCoding> value;
 
         public TE(ArrayList<TCoding> value) {
@@ -444,7 +573,7 @@ public class DTOs {
         }
     }
 
-    public static class Trailer extends Header {
+    public static class Trailer implements ValueListHeader<String> {
         public final ArrayList<String> value;
 
         public Trailer(ArrayList<String> value) {
@@ -461,7 +590,7 @@ public class DTOs {
             this.version = version;
         }
     }
-    public static class Upgrade extends Header {
+    public static class Upgrade implements ValueListHeader<Protocol> {
         public final ArrayList<Protocol> value;
 
         public Upgrade(ArrayList<Protocol> value) {
@@ -469,7 +598,7 @@ public class DTOs {
         }
     }
 
-    public static class UserAgent extends Header {
+    public static class UserAgent implements ValueListHeader<Product> {
         public final ArrayList<Product> value;
 
         public UserAgent(ArrayList<Product> value) {
@@ -478,11 +607,16 @@ public class DTOs {
     }
 
     public sealed interface VaryType {
-        record Empty() implements VaryType {}
-        record Star() implements VaryType {}
-        record Fields(ArrayList<String> value) implements VaryType {}
+        final class Star implements VaryType {}
+        final class Fields implements VaryType {
+            public final ArrayList<String> value;
+
+            public Fields(ArrayList<String> value) {
+                this.value = value;
+            }
+        }
     }
-    public static class Vary extends Header {
+    public static class Vary implements Header {
         public final VaryType value;
 
         public Vary(VaryType value) {
@@ -490,9 +624,59 @@ public class DTOs {
         }
     }
 
-    public static class  WWWAuthenticate extends Authenticate {
+    public static class WWWAuthenticate extends Authenticate {
         public WWWAuthenticate(ArrayList<Challenge> value) {
             super(value);
+        }
+    }
+
+    public static class AccessControlAllowCredentials implements Header { }
+
+    public static class AccessControlExposeHeaders implements ValueListHeader<String> {
+        public final ArrayList<String> fieldNames;
+
+        public AccessControlExposeHeaders(ArrayList<String> fieldNames) {
+            this.fieldNames = fieldNames;
+        }
+    }
+
+    public static class AccessControlMaxAge implements Header {
+        public final long value;
+
+        public AccessControlMaxAge(long value) {
+            this.value = value;
+        }
+    }
+
+    public static class AccessControlAllowMethods implements ValueListHeader<Method> {
+        public final ArrayList<Method> allowedMethods;
+
+        public AccessControlAllowMethods(ArrayList<Method> allowedMethods) {
+            this.allowedMethods = allowedMethods;
+        }
+    }
+
+    public static class AccessControlAllowHeaders implements ValueListHeader<String> {
+        public final ArrayList<String> allowedHeaders;
+
+        public AccessControlAllowHeaders(ArrayList<String> allowedHeaders) {
+            this.allowedHeaders = allowedHeaders;
+        }
+    }
+
+    public static class AccessControlRequestMethod implements Header {
+        public final Method method;
+
+        public AccessControlRequestMethod(Method method) {
+            this.method = method;
+        }
+    }
+
+    public static class AccessControlRequestHeaders implements ValueListHeader<String> {
+        public final ArrayList<String> requestHeaders;
+
+        public AccessControlRequestHeaders(ArrayList<String> requestHeaders) {
+            this.requestHeaders = requestHeaders;
         }
     }
 

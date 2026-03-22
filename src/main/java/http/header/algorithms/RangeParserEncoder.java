@@ -1,14 +1,18 @@
 package http.header.algorithms;
 
+import http.BaseEncoder;
+import http.BaseEncoder.ResponseByteStream;
+import http.header.DTOs;
+
 import java.util.ArrayList;
 
-import static http.BaseParser.*;
+import static http.BaseDecoder.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class RangeParserEncoder implements HeaderParser<Range>, HeaderEncoder<Range> {
+public class RangeParserEncoder implements HeaderParser<Range> {
     @Override
-    public Range PARSE_HEADER(ByteStream bs, Buffer bfr) {
+    public Range decode(ByteStream bs, Buffer bfr) {
         TOKEN_TCHAR(bs, bfr);
         var rangeUnit = bfr.toStringAndReset();
 
@@ -35,7 +39,27 @@ public class RangeParserEncoder implements HeaderParser<Range>, HeaderEncoder<Ra
     }
 
     @Override
-    public void ENCODE_HEADER(ResponseByteStream rbs, Range header) {
-        return new byte[0];
+    public void encode(ResponseByteStream rbs, Range header) {
+        BaseEncoder.RANGE_UNIT(rbs, header.rangeUnit);
+
+        rbs.push('=');
+
+        for (var i = 0; i < header.value.size(); i++) {
+            var value = header.value.get(i);
+
+            if (value instanceof RangeSpec.Start) {
+                BaseEncoder.NUMBER(rbs, ((RangeSpec.Start) value).value);
+                rbs.push('-');
+            } else if (value instanceof RangeSpec.Interval) {
+                BaseEncoder.NUMBER(rbs, ((RangeSpec.Interval) value).from);
+                rbs.push('-');
+                BaseEncoder.NUMBER(rbs, ((RangeSpec.Interval) value).to);
+            } else {
+                rbs.push('-');
+                BaseEncoder.NUMBER(rbs, ((RangeSpec.Suffix) value).value);
+            }
+
+            if (i != header.value.size()-1) rbs.push(',');
+        }
     }
 }

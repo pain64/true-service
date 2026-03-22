@@ -1,16 +1,20 @@
 package http.header.algorithms;
 
+import http.BaseEncoder;
+import http.BaseEncoder.ResponseByteStream;
+import http.header.DTOs;
+
 import java.util.ArrayList;
 
-import static http.BaseParser.*;
+import static http.BaseDecoder.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class VaryParserEncoder implements HeaderParser<Vary>, HeaderEncoder<Vary> {
+public class VaryParserEncoder implements HeaderParser<Vary> {
     @Override
-    public Vary PARSE_HEADER(ByteStream bs, Buffer bfr) {
+    public Vary decode(ByteStream bs, Buffer bfr) {
         VaryType varyType;
-        if (!IS_TCHAR(bs)) varyType = new VaryType.Empty();
+        if (!IS_TCHAR(bs)) return new Vary(new VaryType.Fields(new ArrayList<String>()));
         else if (IS_CHAR(bs, '*')) {bs.advance(); varyType = new VaryType.Star();}
         else {
             var value = new ArrayList<String>();
@@ -27,7 +31,8 @@ public class VaryParserEncoder implements HeaderParser<Vary>, HeaderEncoder<Vary
     }
 
     @Override
-    public void ENCODE_HEADER(ResponseByteStream rbs, Vary header) {
-        return new byte[0];
+    public void encode(ResponseByteStream rbs, Vary header) {
+        if (header.value instanceof VaryType.Star) rbs.push('*');
+        else BaseEncoder.TOKENS_COMMA_SEPARATED(rbs, ((VaryType.Fields)header.value).value);
     }
 }

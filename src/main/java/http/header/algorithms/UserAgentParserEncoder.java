@@ -1,17 +1,26 @@
 package http.header.algorithms;
 
-import static http.BaseParser.*;
+import http.BaseEncoder;
+
+import java.util.ArrayList;
+
+import static http.BaseDecoder.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class UserAgentParserEncoder implements HeaderParser<UserAgent>, HeaderEncoder<UserAgent> {
+public class UserAgentParserEncoder implements ValueListHeaderParser<Product, UserAgent> {
     @Override
-    public UserAgent PARSE_HEADER(ByteStream bs, Buffer bfr) {
-        return new UserAgent(PRODUCTS(bs, bfr));
+    public UserAgent create(ArrayList<Product> valueArray) {
+        return new UserAgent(valueArray);
     }
 
     @Override
-    public void ENCODE_HEADER(ResponseByteStream rbs, UserAgent header) {
-        return new byte[0];
+    public void decode(ByteStream bs, Buffer bfr, ArrayList<Product> dest) {
+        PRODUCTS(bs, bfr, dest);
+    }
+
+    @Override
+    public void encode(BaseEncoder.ResponseByteStream rbs, UserAgent header) {
+        BaseEncoder.PRODUCTS(rbs, header.value);
     }
 }

@@ -1,39 +1,40 @@
 package http.header.algorithms;
 
+import http.BaseEncoder;
+
 import java.util.ArrayList;
 
-import static http.BaseParser.*;
+import static http.BaseDecoder.*;
 import static http.HttpParser.*;
 import static http.header.DTOs.*;
 
-public class UpgradeParserEncoder implements HeaderParser<Upgrade>, HeaderEncoder<Upgrade> {
+public class UpgradeParserEncoder implements ValueListHeaderParser<Protocol, Upgrade> {
     @Override
-    public Upgrade PARSE_HEADER(ByteStream bs, Buffer bfr) {
-        var value = new ArrayList<Protocol>();
-
-        if (IS_TCHAR(bs)) {
-            do {
-                TOKEN_TCHAR(bs, bfr);
-                if (bfr.remains() == 0) throw new RuntimeException("Expected protocol name");
-                var name = bfr.toStringAndReset();
-
-                String version = null;
-                if (IS_CHAR(bs, '/')) {
-                    bs.advance();
-                    TOKEN_TCHAR(bs, bfr);
-                    if (bfr.remains() == 0) throw new RuntimeException("Expected protocol version");
-                    version = bfr.toStringAndReset();
-                }
-
-                value.add(new Protocol(name, version));
-            } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
-        }
-
-        return new Upgrade(value);
+    public Upgrade create(ArrayList<Protocol> valueArray) {
+        return new Upgrade(valueArray);
     }
 
     @Override
-    public void ENCODE_HEADER(ResponseByteStream rbs, Upgrade header) {
-        return new byte[0];
+    public void decode(ByteStream bs, Buffer bfr, ArrayList<Protocol> dest) {
+        if (!IS_TCHAR(bs)) return;
+
+        do {
+            TOKEN_TCHAR(bs, bfr);
+            var name = bfr.toStringAndReset();
+
+            var version = (String) null;
+            if (IS_CHAR(bs, '/')) {
+                bs.advance();
+                TOKEN_TCHAR(bs, bfr);
+                version = bfr.toStringAndReset();
+            }
+
+            dest.add(new Protocol(name, version));
+        } while (OWS_DELIMITER_OWS_SKIP(bs, ','));
+    }
+
+    @Override
+    public void encode(BaseEncoder.ResponseByteStream rbs, Upgrade header) {
+
     }
 }
