@@ -28,8 +28,8 @@ public class Dsl {
 
     //  @Get("/") Union2<
     //      @Sc400 @TextPlain String,
-    //      List3<
-    //          MyOutputHeader,
+    //      @Sc200 List3<
+    //          @Header MyOutputHeader,
     //          @FormMultipart @Name("name") String ,
     //          @FormMultipart @Name("age")  Integer
     //      >
