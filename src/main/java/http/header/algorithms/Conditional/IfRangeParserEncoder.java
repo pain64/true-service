@@ -12,9 +12,20 @@ import static http.header.DTOs.*;
 public class IfRangeParserEncoder implements HeaderParser<IfRange> {
     @Override
     public IfRange decode(ByteStream bs, Buffer bfr) {
-        var entityTagOpt = ENTITY_TAG_OPT(bs, bfr);
-        if (entityTagOpt != null) return new IfRange(new IfRangeType.EntityTag(entityTagOpt));
-        return new IfRange(new IfRangeType.Date(IMF_FIX_DATE(bs, bfr)));
+        if (bs.current() == '"') {
+            return new IfRange(new IfRangeType.EntityTag(ENTITY_TAG_OPT(bs, bfr)));
+        }
+        else if (bs.current() != 'W') {
+            return new IfRange(new IfRangeType.Date(IMF_FIX_DATE(bs, bfr)));
+        } else {
+            bs.advance();
+            if (bs.current() == '/') {
+                bs.unadvance((byte) 'W');
+                return new IfRange(new IfRangeType.EntityTag(ENTITY_TAG_OPT(bs, bfr)));
+            }
+            bs.unadvance((byte) 'W');
+            return new IfRange(new IfRangeType.Date(IMF_FIX_DATE(bs, bfr)));
+        }
     }
 
     @Override

@@ -277,6 +277,9 @@ public class DTOs {
             public final long to;
 
             public Interval(long from, long to) {
+                if (from > to) {
+                    throw new RuntimeException("Required to > from");
+                }
                 this.from = from;
                 this.to = to;
             }
@@ -679,5 +682,9 @@ public class DTOs {
             this.requestHeaders = requestHeaders;
         }
     }
+
+    //URI headers
+    // Content-Location, Host, Location, Referer, Via, Origin, AccessControlAllowOrigin
+
 
 }

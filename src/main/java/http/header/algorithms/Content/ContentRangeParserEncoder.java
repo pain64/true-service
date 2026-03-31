@@ -11,9 +11,11 @@ import static http.header.DTOs.*;
 public class ContentRangeParserEncoder implements HeaderParser<ContentRange> {
     @Override
     public ContentRange decode(ByteStream bs, Buffer bfr) {
-        TOKEN_TCHAR(bs, bfr);
-        var rangeUnitValue = bfr.toStringAndReset();
-        var rangeUnit = "bytes".equals(rangeUnitValue) ? new RangeUnit.Bytes() : new RangeUnit.Token(rangeUnitValue);
+        CHAR(bs,'b'); CHAR(bs,'y'); CHAR(bs,'t'); CHAR(bs,'e'); CHAR(bs,'s');
+//        TOKEN_TCHAR(bs, bfr);
+//        var rangeUnitValue = bfr.toStringAndReset();
+//        var rangeUnit = "bytes".equals(rangeUnitValue) ? new RangeUnit.Bytes() : new RangeUnit.Token(rangeUnitValue);
+        var rangeUnit = new RangeUnit.Bytes();
 
         CHAR(bs, ' ');
 

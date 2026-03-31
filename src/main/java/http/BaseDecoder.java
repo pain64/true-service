@@ -2,14 +2,19 @@ package http;
 
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import static http.HttpParser.*;
 import static http.JumpTables.*;
 import static http.header.DTOs.*;
+
+/* базовый контракт при разработке
+* делаем парсинг через лукахеды и буффер
+* снаружи определяем
+* не должно быть OPT парсеров
+*
+*
+* */
 
 public class BaseDecoder {
 
@@ -259,8 +264,11 @@ public class BaseDecoder {
     }
 
     public static int NDIGIT(ByteStream bs, int N) {
-        int value = 0;
-        for (var i = 0; i < N; i++) value += (value * 10) + (DIGIT(bs) - '0');
+        int value = (DIGIT(bs) - '0');
+        for (var i = 0; i < N-1; i++) {
+            value *= 10;
+            value += (DIGIT(bs) - '0');
+        }
 
         return value;
     }
@@ -269,7 +277,7 @@ public class BaseDecoder {
         DAY_NAME(bs, bfr); CHAR(bs, ','); CHAR(bs, ' ');
         var day = NDIGIT(bs, 2); CHAR(bs, ' ');
         var month = MONTH(bs, bfr); CHAR(bs, ' ');
-        var year = NDIGIT(bs, 4);
+        var year = NDIGIT(bs, 4); CHAR(bs, ' ');
 
         var hour = NDIGIT(bs, 2); CHAR(bs, ':');
         if (hour >= 24) throw new HeaderDecodeException(bs.position(), "Hour should be less then 24");
@@ -350,7 +358,7 @@ public class BaseDecoder {
 
     public static EntityTag ENTITY_TAG_OPT(ByteStream bs, Buffer bfr) {
         var weak = false;
-        if (IS_CHAR(bs, 'W')) {CHAR(bs, '/'); weak = true;}
+        if (IS_CHAR(bs, 'W')) {bs.advance(); CHAR(bs, '/'); weak = true;}
 
         if (!IS_CHAR(bs, '"')) {
             if (weak) throw new HeaderDecodeException(bs.position(), "Expected opaque-tag");
@@ -372,9 +380,14 @@ public class BaseDecoder {
         var value = new ArrayList<EntityTag>();
 
         var entityTag = ENTITY_TAG_OPT(bs, bfr);
-        if (entityTag != null) value.add(entityTag);
+        if (entityTag == null) return new MatchEntitiesTags.EntitiesTags(value);
 
-        while (OWS_DELIMITER_OWS_SKIP(bs, ',')) value.add(entityTag);
+        value.add(entityTag);
+        while (OWS_DELIMITER_OWS_SKIP(bs, ',')) {
+            entityTag = ENTITY_TAG_OPT(bs, bfr);
+            if (entityTag == null) throw new HeaderDecodeException(bs.position, "Expected entity tag");
+            value.add(entityTag);
+        }
 
         return new MatchEntitiesTags.EntitiesTags(value);
     }

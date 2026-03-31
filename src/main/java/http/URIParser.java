@@ -2,6 +2,7 @@ package http;
 
 import http.BaseDecoder.Buffer;
 import http.BaseDecoder.ByteStream;
+import http.HttpParser.Header;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -12,6 +13,10 @@ import static http.JumpTables.IS_UNRESERVED_OR_SUBDELIMS_TABLE;
 
 // UriParser
 public class URIParser {
+
+    //URI headers
+    // Content-Location, Host, Location, Referer, Via, Origin, AccessControlAllowOrigin
+
     public sealed interface Host {
         String getValue();
         final class RegName implements Host {
@@ -52,42 +57,57 @@ public class URIParser {
         }
     }
 
-    public static class Authority {
-        public final byte[] userInfo;
-        public final Host host;
-        public final int port;
 
-        public Authority(byte[] userInfo, Host host, int port) {
-            this.userInfo = userInfo;
-            this.host = host;
-            this.port = port;
+    // URI ~ header
+    // create from decoded client -> server
+    // create from String server -> client
+    // parse
+
+    public static class URI implements Header {
+        public final byte[] value;
+        private boolean parsed;
+
+        private String scheme;
+        private Host host;
+        private Integer port;
+        private String path;
+        private ArrayList<Q> query;
+
+        public void parse() {
+            if (!parsed) {
+                // ...
+                this.parsed = true;
+            }
         }
-    }
 
-    public sealed interface Q {
-        record Int(String name, int value) implements Q {}
-    }
+        public URI(byte[] value) {
+            this.value = value;
 
-    public static class PartialURI {
-        public final Authority authority;
-        public final byte[] path;
-        public final ArrayList<Q> query;
-
-        public PartialURI(Authority authority, byte[] path, ArrayList<Q> query) {
-            this.authority = authority;
-            this.path = path;
-            this.query = query;
+            parse();
         }
-    }
 
-    public static class AbsoluteURI {
-        public final byte[] scheme;
-        public final PartialURI relativePart;
+        public URI(String value, boolean parse) {
+            this.value = value.getBytes(StandardCharsets.UTF_8);
 
-        public AbsoluteURI(byte[] scheme, PartialURI relativePart) {
-            this.scheme = scheme;
-            this.relativePart = relativePart;
+            if (parse) parse();
         }
+
+        public String getScheme() {
+            return null;
+        }
+
+        public String getHost() {
+            return null;
+        }
+
+        public int getPort() {
+            return 0;
+        }
+
+        public String getPath() {
+            return null;
+        }
+
     }
 
     public static String SCHEME(ByteStream bs, Buffer bfr) {
