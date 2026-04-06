@@ -44,4 +44,11 @@ public class SampleEndpoint implements Endpoint {
         return null;
     }
 
+    //
+    // AuthMiddleware()
+    // auth_middleware(Header auth) {...} -> value
+    //
+    // middleware: f(args...) -> value
+
+    // endpoint
 }
