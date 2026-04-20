@@ -12,7 +12,7 @@ public class TrueServiceConfiguration {
             )
             /**/.httpApi(new UrlShortenerApi()).end()
             /**/.httpApi(new UrlShortenerApi())
-            /*    */.method("xxx").end().end().end()
-            .submodule(...)
+            /*    */.method("xxx").end().end().end();
+            //.submodule(...)
     }
 }

@@ -71,7 +71,7 @@ public class URIParser {
         private Host host;
         private Integer port;
         private String path;
-        private ArrayList<Q> query;
+        //private ArrayList<Q> query;
 
         public void parse() {
             if (!parsed) {
