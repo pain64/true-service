@@ -5,9 +5,9 @@ import lombok.Data;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.UUID;
-
-import static http.Dsl.BeforeResult.*;
-import static http.Dsl.BeforeResult.ofFailure;
+//
+//import static http.Dsl.BeforeResult.*;
+//import static http.Dsl.BeforeResult.ofFailure;
 
 public class Dsl {
     // Расширения:
@@ -101,55 +101,6 @@ public class Dsl {
     interface HttpHeader { }
 
     //https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers
-
-    //Authorization
-    public static class Authorization implements HttpHeader { }
-    public static class ProxyAuthorization implements HttpHeader { }
-
-    //Connection
-    public static class Connection implements HttpHeader { }
-    public static class KeepAlive implements HttpHeader { }
-
-
-    public static class Accept implements HttpHeader { }
-    public static class AcceptEncoding implements HttpHeader { }
-    public static class AcceptCharset implements HttpHeader { }
-    public static class AcceptLanguage implements HttpHeader { }
-    public static class AcceptRange implements HttpHeader { }
-
-    public static class MaxForwards implements HttpHeader { }
-
-    //CORS
-
-    //Downloads
-    public static class ContentDisposition implements HttpHeader { }
-
-    //Message body information
-    public static class ContentLength implements HttpHeader { }
-    public static class ContentType implements HttpHeader { }
-    public static class ContentEncoding implements HttpHeader { }
-    public static class ContentLanguage implements HttpHeader { }
-    public static class ContentLocation implements HttpHeader { }
-
-    //Redirects
-    public static class Location implements HttpHeader { }
-    public static class Refresh implements HttpHeader { }
-
-    //Request context
-    public static class From implements HttpHeader { }
-    public static class Host implements HttpHeader { }
-    public static class Referer implements HttpHeader { }
-    public static class ReferrerPolicy implements HttpHeader { }
-    public static class UserAgent implements HttpHeader { }
-
-    //Cache-control
-    public static class CacheControl implements HttpHeader { }
-
-
-    //Date
-    public static class Date implements HttpHeader { }
-
-    public static class Server implements HttpHeader { }
 
     public interface CookieHeader extends HttpHeader { } // kv
     public static class SetCookie1<T> implements HttpHeader { }
@@ -396,194 +347,194 @@ public class Dsl {
 
     public record Vec2f(float x, float y) { }
 
-
-    public Variants2<
-                HttpResponse<
-                    Sc200, H<Location, H<SetCookie2<MyCookiePart1, MyCookiePart2>, HNil>>,
-                    ApplicationJson<Vec2f>>,
-                HttpResponse<Sc400, HNil, TextPlain>>
-
-    doSomething(
-        // Dsl.doSomething/{departmentId}/{userId}/?userName=...&age=...
-        PathParameter<UUID> departmentId,
-        PathParameter<UUID> userId,
-        QueryParameter<String> userName,
-        QueryParameter<Integer> age,
-        Uri uri, Path path, Query query,
-        ContentLanguage contentLanguage,
-        ApplicationJson<Vec2f> vector
-    ) {
-        if (age.v < 18)
-            return Variants2.of2(
-                new HttpResponse<>(new Sc400(), HNil.v, new TextPlain("too small"))
-            );
-
-        return null;
-    }
-
-    public sealed interface BeforeResult<ExtraNext, BeforeFailure extends EndpointResult> {
-        record Success<
-            ExtraNext, BeforeFailure extends EndpointResult
-            >(ExtraNext value) implements BeforeResult<ExtraNext, BeforeFailure> { }
-
-        record Failure<
-            ExtraNext, BeforeFailure extends EndpointResult
-            >(BeforeFailure value) implements BeforeResult<ExtraNext, BeforeFailure> { }
-
-        static <ExtraNext, BeforeFailure extends EndpointResult> BeforeResult<
-            ExtraNext, BeforeFailure> ofSuccess(ExtraNext value) {
-            return new Success<>(value);
-        }
-
-        static <ExtraNext, BeforeFailure extends EndpointResult> BeforeResult<
-            ExtraNext, BeforeFailure> ofFailure(BeforeFailure value) {
-            return new Failure<>(value);
-        }
-    }
-
-    interface Middleware { }
-
-    public static class AuthenticationMiddleware implements Middleware {
-
-        public record User(long id, String name) { }
-
-        public BeforeResult<User,
-            HttpResponse<Sc401, HNil, TextPlain>> before(Authorization authorization) {
-
-            if (false) return ofFailure(
-                new HttpResponse<>(Sc401.v, HNil.v, new TextPlain("Пользователь не найден"))
-            );
-
-            return ofSuccess(new User(42L, "Joe"));
-        }
-
-        public <S extends StatusCode, X extends HeaderList,
-            M extends MimeMessage> HttpResponse<S, X, M> onAfter1(
-            HttpResponse<S, X, M> nextResult
-        ) {
-            return nextResult; // pass through without conversion
-        }
-    }
-
-    // Variadic templates ???
-    // H<Authorization, H<ContentType, HEnd>>
-    //
-
-    public static class ToJsonRpcMiddleware implements Middleware {
-
-        public sealed interface RpcResult<T> { }
-        public record Ok<T>(T result) implements RpcResult<T> { }
-        public record Fail<T>(String message) implements RpcResult<T> { }
-
-        public BeforeResult<Void, ?> before() {
-            return ofSuccess(null); // no extra parameters
-        }
-
-        // route by:
-        //     1. StatusCode
-        //     2. MimeType
-        public <X extends HeaderList, T> HttpResponse<Sc200, X,
-            ApplicationJson<RpcResult<T>>> onAfter1(
-            HttpResponse<Sc200, X, ApplicationJson<T>> nextResult
-        ) {
-            return new HttpResponse<>(
-                Sc200.v, nextResult.headers,
-                new ApplicationJson<>(new Ok<>(nextResult.body.v))
-            );
-        }
-
-        // also HeadersTail
-        // public <
-        //     HT extends HeadersTail,
-        //     BT extends BodyTail>
-        // List3<
-        //     SuperHeader, HT, @ApplicationJson BT
-        // >
-        // after__200__ApplicationJson(HT headers, BT body) {
-        //     return List3.of(new SuperHeader(...), headers, body);
-        // }
-        //
-        // public <BT extends BodyTail> after200(@ApplicationJson BT nextResult) {
-        //     return new Ok(nextResult);
-        // }
-        // public <BT extends BodyTail> List2<
-        //     @ApplicationJson @Name("userId") Long,
-        //     @ApplicationJson BT
-        // > after__200__ApplicationJson(@ApplicationJson BT nextResult) {
-        //
-        // }
-        //
-        // public T after__200__FormMultipart(@FormMultipart T nextResult) {
-        //     // => ->
-        //     // overload resolution ???
-        // }
-
-//        public @Sc200 Fail<Void> afterException1(
+//
+//    public Variants2<
+//                HttpResponse<
+//                    Sc200, H<Location, H<SetCookie2<MyCookiePart1, MyCookiePart2>, HNil>>,
+//                    ApplicationJson<Vec2f>>,
+//                HttpResponse<Sc400, HNil, TextPlain>>
+//
+//    doSomething(
+//        // Dsl.doSomething/{departmentId}/{userId}/?userName=...&age=...
+//        PathParameter<UUID> departmentId,
+//        PathParameter<UUID> userId,
+//        QueryParameter<String> userName,
+//        QueryParameter<Integer> age,
+//        Uri uri, Path path, Query query,
+//        ContentLanguage contentLanguage,
+//        ApplicationJson<Vec2f> vector
+//    ) {
+//        if (age.v < 18)
+//            return Variants2.of2(
+//                new HttpResponse<>(new Sc400(), HNil.v, new TextPlain("too small"))
+//            );
+//
+//        return null;
+//    }
+//
+//    public sealed interface BeforeResult<ExtraNext, BeforeFailure extends EndpointResult> {
+//        record Success<
+//            ExtraNext, BeforeFailure extends EndpointResult
+//            >(ExtraNext value) implements BeforeResult<ExtraNext, BeforeFailure> { }
+//
+//        record Failure<
+//            ExtraNext, BeforeFailure extends EndpointResult
+//            >(BeforeFailure value) implements BeforeResult<ExtraNext, BeforeFailure> { }
+//
+//        static <ExtraNext, BeforeFailure extends EndpointResult> BeforeResult<
+//            ExtraNext, BeforeFailure> ofSuccess(ExtraNext value) {
+//            return new Success<>(value);
+//        }
+//
+//        static <ExtraNext, BeforeFailure extends EndpointResult> BeforeResult<
+//            ExtraNext, BeforeFailure> ofFailure(BeforeFailure value) {
+//            return new Failure<>(value);
+//        }
+//    }
+//
+//    interface Middleware { }
+//
+//    public static class AuthenticationMiddleware implements Middleware {
+//
+//        public record User(long id, String name) { }
+//
+//        public BeforeResult<User,
+//            HttpResponse<Sc401, HNil, TextPlain>> before(Authorization authorization) {
+//
+//            if (false) return ofFailure(
+//                new HttpResponse<>(Sc401.v, HNil.v, new TextPlain("Пользователь не найден"))
+//            );
+//
+//            return ofSuccess(new User(42L, "Joe"));
+//        }
+//
+//        public <S extends StatusCode, X extends HeaderList,
+//            M extends MimeMessage> HttpResponse<S, X, M> onAfter1(
+//            HttpResponse<S, X, M> nextResult
+//        ) {
+//            return nextResult; // pass through without conversion
+//        }
+//    }
+//
+//    // Variadic templates ???
+//    // H<Authorization, H<ContentType, HEnd>>
+//    //
+//
+//    public static class ToJsonRpcMiddleware implements Middleware {
+//
+//        public sealed interface RpcResult<T> { }
+//        public record Ok<T>(T result) implements RpcResult<T> { }
+//        public record Fail<T>(String message) implements RpcResult<T> { }
+//
+//        public BeforeResult<Void, ?> before() {
+//            return ofSuccess(null); // no extra parameters
+//        }
+//
+//        // route by:
+//        //     1. StatusCode
+//        //     2. MimeType
+//        public <X extends HeaderList, T> HttpResponse<Sc200, X,
+//            ApplicationJson<RpcResult<T>>> onAfter1(
+//            HttpResponse<Sc200, X, ApplicationJson<T>> nextResult
+//        ) {
+//            return new HttpResponse<>(
+//                Sc200.v, nextResult.headers,
+//                new ApplicationJson<>(new Ok<>(nextResult.body.v))
+//            );
+//        }
+//
+//        // also HeadersTail
+//        // public <
+//        //     HT extends HeadersTail,
+//        //     BT extends BodyTail>
+//        // List3<
+//        //     SuperHeader, HT, @ApplicationJson BT
+//        // >
+//        // after__200__ApplicationJson(HT headers, BT body) {
+//        //     return List3.of(new SuperHeader(...), headers, body);
+//        // }
+//        //
+//        // public <BT extends BodyTail> after200(@ApplicationJson BT nextResult) {
+//        //     return new Ok(nextResult);
+//        // }
+//        // public <BT extends BodyTail> List2<
+//        //     @ApplicationJson @Name("userId") Long,
+//        //     @ApplicationJson BT
+//        // > after__200__ApplicationJson(@ApplicationJson BT nextResult) {
+//        //
+//        // }
+//        //
+//        // public T after__200__FormMultipart(@FormMultipart T nextResult) {
+//        //     // => ->
+//        //     // overload resolution ???
+//        // }
+//
+////        public @Sc200 Fail<Void> afterException1(
+////            Exception nextException
+////        ) {
+////            return new Fail<>(nextException.getMessage());
+////        }
+//
+//        // route by: Exception class
+//        public HttpResponse<Sc200, HNil, ApplicationJson<Fail<Void>>> afterException1(
 //            Exception nextException
 //        ) {
-//            return new Fail<>(nextException.getMessage());
+//            return new HttpResponse<>(
+//                Sc200.v, HNil.v, new ApplicationJson<>(
+//                new Fail<>(nextException.getMessage())
+//            ));
 //        }
-
-        // route by: Exception class
-        public HttpResponse<Sc200, HNil, ApplicationJson<Fail<Void>>> afterException1(
-            Exception nextException
-        ) {
-            return new HttpResponse<>(
-                Sc200.v, HNil.v, new ApplicationJson<>(
-                new Fail<>(nextException.getMessage())
-            ));
-        }
-    }
-
-
-    public static class DropHeaderMiddleware implements Middleware {
-
-        public <S extends StatusCode, X extends HeaderList, C extends MimeMessage
-            > HttpResponse<S, X, C> onAfter1(
-            HttpResponse<S, H<Authorization, X>, C> nextResult
-        ) {
-            return new HttpResponse<>(
-                nextResult.statusCode, nextResult.headers.next, nextResult.body
-            );
-        }
-    }
-
-    public static class AddHeaderMiddleware implements Middleware {
-
-        public <S extends StatusCode, X extends HeaderList, C extends MimeMessage
-            > HttpResponse<S, H<Server, X>, C> onAfter1(
-            HttpResponse<S, X, C> nextResult
-        ) {
-            return new HttpResponse<>(
-                nextResult.statusCode, new H<>(new Server(), nextResult.headers), nextResult.body
-            );
-        }
-    }
-
-    // Middleware features:
-    //     1. добавление extra параметров в контекст
-    //     2. добавление extra логики до и после вызова upstream
-    //     3. в зависимости от __того что вернул upstream__ как-то переобработать ответ
-    //     4. обработать исключение со стороны upstream
-    // function middleware(PathVariable extra, upstream) {
-    //     if(!assertSome(extra)) return ???
-    //
-    // }
-    // Разделим middleware на before и after
-    //     before:
-    //         сделать extra работу до вызова upstream. Если handlable ошибка - какой-то другой статус код???
-    //     after:
-    //         1. сделать extra работу после вызова upstream
-    //         2. Каждый известный тип ответа upstream замапить во что-то другое?
-    // class ExceptionHandlingMiddleware {
-    //     ByStatusCode2<
-    //         >
-    //     handle(Runnable invocation) {
-    //         try {
-    //             return of1(invocation.run());
-    //         } catch(Exception e) {
-    //             return
-    //         }
-    //     }
-    // }
+//    }
+//
+//
+//    public static class DropHeaderMiddleware implements Middleware {
+//
+//        public <S extends StatusCode, X extends HeaderList, C extends MimeMessage
+//            > HttpResponse<S, X, C> onAfter1(
+//            HttpResponse<S, H<Authorization, X>, C> nextResult
+//        ) {
+//            return new HttpResponse<>(
+//                nextResult.statusCode, nextResult.headers.next, nextResult.body
+//            );
+//        }
+//    }
+//
+//    public static class AddHeaderMiddleware implements Middleware {
+//
+//        public <S extends StatusCode, X extends HeaderList, C extends MimeMessage
+//            > HttpResponse<S, H<Server, X>, C> onAfter1(
+//            HttpResponse<S, X, C> nextResult
+//        ) {
+//            return new HttpResponse<>(
+//                nextResult.statusCode, new H<>(new Server(), nextResult.headers), nextResult.body
+//            );
+//        }
+//    }
+//
+//    // Middleware features:
+//    //     1. добавление extra параметров в контекст
+//    //     2. добавление extra логики до и после вызова upstream
+//    //     3. в зависимости от __того что вернул upstream__ как-то переобработать ответ
+//    //     4. обработать исключение со стороны upstream
+//    // function middleware(PathVariable extra, upstream) {
+//    //     if(!assertSome(extra)) return ???
+//    //
+//    // }
+//    // Разделим middleware на before и after
+//    //     before:
+//    //         сделать extra работу до вызова upstream. Если handlable ошибка - какой-то другой статус код???
+//    //     after:
+//    //         1. сделать extra работу после вызова upstream
+//    //         2. Каждый известный тип ответа upstream замапить во что-то другое?
+//    // class ExceptionHandlingMiddleware {
+//    //     ByStatusCode2<
+//    //         >
+//    //     handle(Runnable invocation) {
+//    //         try {
+//    //             return of1(invocation.run());
+//    //         } catch(Exception e) {
+//    //             return
+//    //         }
+//    //     }
+//    // }
 }
